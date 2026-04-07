@@ -6,12 +6,22 @@ gps_log = []
 
 @app.route("/gps", methods=["POST"])
 def receive_gps():
-    data = request.get_json(force=True, silent=True) or {}
-    lat  = data.get("lat")
-    lng  = data.get("lng")
+    if request.is_json:
+        data = request.get_json()
+    else:
+        data = request.form
+
+    lat = data.get("lat")
+    lng = data.get("lng")
+
     if lat is None or lng is None:
         return jsonify({"error": "missing lat/lng"}), 400
-    entry = {"lat": lat, "lng": lng, "time": datetime.utcnow().isoformat()}
+
+    entry = {
+        "lat": float(lat),
+        "lng": float(lng),
+        "time": datetime.utcnow().isoformat()
+    }
     gps_log.append(entry)
     print(f"[GPS] {entry}")
     return jsonify({"ok": True}), 200
