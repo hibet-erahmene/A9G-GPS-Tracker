@@ -8,15 +8,15 @@ app = Flask(__name__)
 gps_log = []
 obd2_data = {"error": "waiting_for_data"}
 
-# HTML template with girly dashboard
+# HTML template with gaming aesthetic
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌸 GPS + OBD2 Tracker 🌸</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    <title>GPS + OBD2 TRACKER</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -27,25 +27,10 @@ HTML_TEMPLATE = '''
         }
 
         body {
-            background: linear-gradient(135deg, #ffe9f4 0%, #ffe0f0 50%, #ffd6ea 100%);
-            font-family: 'Quicksand', sans-serif;
+            background: #ffe8f0;
+            font-family: 'Orbitron', monospace;
             min-height: 100vh;
             padding: 20px;
-        }
-
-        /* Cute floating hearts animation */
-        @keyframes floatHeart {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
-        }
-
-        .heart {
-            position: fixed;
-            color: #ff9ec0;
-            font-size: 20px;
-            pointer-events: none;
-            z-index: 999;
-            animation: floatHeart linear forwards;
         }
 
         .container {
@@ -57,128 +42,134 @@ HTML_TEMPLATE = '''
         .header {
             text-align: center;
             margin-bottom: 30px;
-            position: relative;
         }
 
         .header h1 {
-            font-family: 'Dancing Script', cursive;
-            font-size: 3rem;
-            color: #ff6b9d;
-            text-shadow: 3px 3px 0 #ffd4e8;
+            font-family: 'Orbitron', monospace;
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #1a1a2e;
+            text-shadow: 3px 3px 0 #d4a5b8;
             margin-bottom: 5px;
         }
 
         .header p {
-            color: #d47a9e;
-            font-size: 0.9rem;
+            color: #4a4a5a;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
             letter-spacing: 2px;
         }
 
         .status-badge {
             display: inline-block;
             padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
             margin-top: 10px;
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 1px;
         }
 
         .status-online {
-            background: #ff9ec0;
-            color: white;
-            box-shadow: 0 0 10px #ff9ec0;
+            background: #1a1a2e;
+            color: #ffe8f0;
+            border-left: 3px solid #4a9eff;
         }
 
         .status-offline {
-            background: #d4a5b8;
-            color: #fff0f5;
+            background: #2a2a3e;
+            color: #888;
+            border-left: 3px solid #ff4444;
         }
 
         /* Grid layout */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin-bottom: 25px;
+            gap: 20px;
+            margin-bottom: 20px;
         }
 
         /* Cards */
         .card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 25px;
+            background: rgba(26, 26, 46, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 8px;
             padding: 20px;
-            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.15);
-            border: 1px solid rgba(255, 182, 193, 0.5);
-            transition: transform 0.3s ease;
+            border: 1px solid #3a3a5a;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
         }
 
         .card:hover {
-            transform: translateY(-5px);
+            border-color: #6a6a8a;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
         }
 
         .card h3 {
-            color: #ff6b9d;
-            font-size: 1.2rem;
+            color: #c8c8e8;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
             margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 2px solid #ffc0d4;
+            border-bottom: 1px solid #3a3a5a;
             padding-bottom: 8px;
+            font-weight: 600;
         }
 
         /* Map */
         #map {
             height: 400px;
-            border-radius: 20px;
+            border-radius: 6px;
             overflow: hidden;
-            border: 3px solid white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 2px solid #3a3a5a;
         }
 
         /* OBD2 metrics grid */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 12px;
         }
 
         .metric {
-            background: white;
-            border-radius: 18px;
-            padding: 15px;
+            background: #1a1a2e;
+            border-radius: 6px;
+            padding: 12px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(255, 105, 180, 0.1);
-            transition: all 0.3s;
+            border: 1px solid #2a2a4a;
         }
 
         .metric-label {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            color: #d47a9e;
+            color: #8a8aaa;
             font-weight: 600;
             margin-bottom: 8px;
+            font-family: 'Share Tech Mono', monospace;
         }
 
         .metric-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #ff6b9d;
-            font-family: monospace;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #4a9eff;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 2px;
         }
 
         .metric-unit {
-            font-size: 0.7rem;
-            color: #b8a0b0;
+            font-size: 0.6rem;
+            color: #6a6a8a;
             margin-left: 3px;
+            font-weight: 400;
         }
 
         .metric-bar {
             width: 100%;
-            height: 4px;
-            background: #ffe0f0;
+            height: 3px;
+            background: #2a2a4a;
             border-radius: 2px;
             margin-top: 10px;
             overflow: hidden;
@@ -186,7 +177,7 @@ HTML_TEMPLATE = '''
 
         .metric-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #ff9ec0, #ff6b9d);
+            background: linear-gradient(90deg, #4a9eff, #6a6aff);
             border-radius: 2px;
             transition: width 0.5s ease;
             width: 0%;
@@ -195,27 +186,33 @@ HTML_TEMPLATE = '''
         /* GPS info panel */
         .gps-info {
             margin-top: 15px;
-            background: white;
-            border-radius: 18px;
+            background: #1a1a2e;
+            border-radius: 6px;
             padding: 12px;
-            font-size: 0.8rem;
+            border: 1px solid #2a2a4a;
         }
 
         .gps-info-row {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid #ffe0f0;
+            padding: 6px 0;
+            border-bottom: 1px solid #2a2a4a;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+        }
+
+        .gps-info-row:last-child {
+            border-bottom: none;
         }
 
         .gps-info-label {
-            color: #d47a9e;
-            font-weight: 600;
+            color: #8a8aaa;
+            letter-spacing: 1px;
         }
 
         .gps-info-value {
-            color: #ff6b9d;
-            font-family: monospace;
+            color: #4a9eff;
+            font-weight: 600;
         }
 
         /* Trajectory list */
@@ -226,14 +223,14 @@ HTML_TEMPLATE = '''
         }
 
         .trajectory-item {
-            background: white;
-            border-radius: 12px;
+            background: #1a1a2e;
+            border-radius: 4px;
             padding: 8px 12px;
             margin-bottom: 8px;
-            font-size: 0.7rem;
-            font-family: monospace;
-            color: #d47a9e;
-            border-left: 3px solid #ff9ec0;
+            font-size: 0.65rem;
+            font-family: 'Share Tech Mono', monospace;
+            color: #8a8aaa;
+            border-left: 2px solid #4a9eff;
         }
 
         /* Footer */
@@ -241,8 +238,11 @@ HTML_TEMPLATE = '''
             text-align: center;
             margin-top: 30px;
             padding: 15px;
-            color: #d47a9e;
-            font-size: 0.7rem;
+            color: #6a6a8a;
+            font-size: 0.6rem;
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 1px;
+            border-top: 1px solid #3a3a5a;
         }
 
         /* Scrollbar */
@@ -251,12 +251,12 @@ HTML_TEMPLATE = '''
         }
 
         .trajectory-list::-webkit-scrollbar-track {
-            background: #ffe0f0;
+            background: #2a2a4a;
             border-radius: 3px;
         }
 
         .trajectory-list::-webkit-scrollbar-thumb {
-            background: #ff9ec0;
+            background: #4a9eff;
             border-radius: 3px;
         }
 
@@ -266,7 +266,7 @@ HTML_TEMPLATE = '''
                 grid-template-columns: 1fr;
             }
             .header h1 {
-                font-size: 2rem;
+                font-size: 1.4rem;
             }
             .metrics-grid {
                 grid-template-columns: 1fr;
@@ -277,31 +277,31 @@ HTML_TEMPLATE = '''
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌸 GPS + OBD2 Tracker 🌸</h1>
-            <p>your cute little car companion</p>
-            <div class="status-badge" id="statusBadge">LOADING...</div>
+            <h1>GPS + OBD2 TRACKER</h1>
+            <p>REAL-TIME TELEMETRY SYSTEM</p>
+            <div class="status-badge" id="statusBadge">[ CONNECTING... ]</div>
         </div>
 
         <div class="dashboard-grid">
             <!-- Left column: Map -->
             <div class="card">
-                <h3>Live Location</h3>
+                <h3>[ LOCATION TRACKING ]</h3>
                 <div id="map"></div>
-                <div class="gps-info" id="gpsInfo">
+                <div class="gps-info">
                     <div class="gps-info-row">
-                        <span class="gps-info-label">Latest Position:</span>
+                        <span class="gps-info-label">LATITUDE:</span>
                         <span class="gps-info-value" id="latestLat">--</span>
                     </div>
                     <div class="gps-info-row">
-                        <span class="gps-info-label">Longitude:</span>
+                        <span class="gps-info-label">LONGITUDE:</span>
                         <span class="gps-info-value" id="latestLng">--</span>
                     </div>
                     <div class="gps-info-row">
-                        <span class="gps-info-label">Last Update:</span>
+                        <span class="gps-info-label">LAST UPDATE:</span>
                         <span class="gps-info-value" id="latestTime">--</span>
                     </div>
                     <div class="gps-info-row">
-                        <span class="gps-info-label">Total Points:</span>
+                        <span class="gps-info-label">TOTAL POINTS:</span>
                         <span class="gps-info-value" id="totalPoints">0</span>
                     </div>
                 </div>
@@ -309,7 +309,7 @@ HTML_TEMPLATE = '''
 
             <!-- Right column: OBD2 Data -->
             <div class="card">
-                <h3>Engine Data</h3>
+                <h3>[ ENGINE DATA ]</h3>
                 <div class="metrics-grid">
                     <div class="metric">
                         <div class="metric-label">RPM</div>
@@ -317,33 +317,33 @@ HTML_TEMPLATE = '''
                         <div class="metric-bar"><div class="metric-bar-fill" id="rpmBar"></div></div>
                     </div>
                     <div class="metric">
-                        <div class="metric-label">Speed</div>
-                        <div class="metric-value" id="speed">-- <span class="metric-unit">km/h</span></div>
+                        <div class="metric-label">SPEED</div>
+                        <div class="metric-value" id="speed">-- <span class="metric-unit">KM/H</span></div>
                         <div class="metric-bar"><div class="metric-bar-fill" id="speedBar"></div></div>
                     </div>
                     <div class="metric">
-                        <div class="metric-label">Coolant</div>
-                        <div class="metric-value" id="coolant">-- <span class="metric-unit">°C</span></div>
+                        <div class="metric-label">COOLANT</div>
+                        <div class="metric-value" id="coolant">-- <span class="metric-unit">C</span></div>
                     </div>
                     <div class="metric">
-                        <div class="metric-label">Engine Load</div>
+                        <div class="metric-label">ENGINE LOAD</div>
                         <div class="metric-value" id="load">-- <span class="metric-unit">%</span></div>
                     </div>
                     <div class="metric">
-                        <div class="metric-label">Throttle</div>
+                        <div class="metric-label">THROTTLE</div>
                         <div class="metric-value" id="throttle">-- <span class="metric-unit">%</span></div>
                     </div>
                     <div class="metric">
-                        <div class="metric-label">Battery</div>
+                        <div class="metric-label">BATTERY</div>
                         <div class="metric-value" id="battery">-- <span class="metric-unit">V</span></div>
                     </div>
                     <div class="metric">
-                        <div class="metric-label">Fuel Level</div>
+                        <div class="metric-label">FUEL LEVEL</div>
                         <div class="metric-value" id="fuel">-- <span class="metric-unit">%</span></div>
                     </div>
                     <div class="metric">
-                        <div class="metric-label">MAF</div>
-                        <div class="metric-value" id="maf">-- <span class="metric-unit">g/s</span></div>
+                        <div class="metric-label">MAF RATE</div>
+                        <div class="metric-value" id="maf">-- <span class="metric-unit">G/S</span></div>
                     </div>
                 </div>
             </div>
@@ -351,14 +351,14 @@ HTML_TEMPLATE = '''
 
         <!-- Trajectory History -->
         <div class="card">
-            <h3>Journey History</h3>
+            <h3>[ JOURNEY LOG ]</h3>
             <div class="trajectory-list" id="trajectoryList">
-                <div style="text-align: center; color: #d47a9e;">Waiting for GPS data...</div>
+                <div style="text-align: center; color: #6a6a8a;">WAITING FOR DATA...</div>
             </div>
         </div>
 
         <div class="footer">
-            💕 made with love • real-time tracking • your car is happy 💕
+            TELEMETRY SYSTEM v1.0 | SECURE DATA STREAM | REAL-TIME MONITORING
         </div>
     </div>
 
@@ -371,8 +371,8 @@ HTML_TEMPLATE = '''
         // Initialize map
         function initMap() {
             map = L.map('map').setView([36.897028, 7.756056], 14);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> & CartoDB',
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OSM & CartoDB',
                 subdomains: 'abcd',
                 maxZoom: 19
             }).addTo(map);
@@ -394,7 +394,7 @@ HTML_TEMPLATE = '''
                     // Update map
                     if (marker === null) {
                         marker = L.marker([latest.lat, latest.lng]).addTo(map);
-                        marker.bindPopup('<b>Current Location</b><br>🌸 You are here!');
+                        marker.bindPopup('<b>CURRENT POSITION</b><br>Lat: ' + latest.lat.toFixed(6) + '<br>Lng: ' + latest.lng.toFixed(6));
                     } else {
                         marker.setLatLng([latest.lat, latest.lng]);
                     }
@@ -402,7 +402,7 @@ HTML_TEMPLATE = '''
                     // Draw path
                     path = data.map(p => [p.lat, p.lng]);
                     if (polyline !== null) map.removeLayer(polyline);
-                    polyline = L.polyline(path, {color: '#ff6b9d', weight: 3, opacity: 0.7}).addTo(map);
+                    polyline = L.polyline(path, {color: '#4a9eff', weight: 3, opacity: 0.8}).addTo(map);
                     map.setView([latest.lat, latest.lng], 15);
                     
                     // Update trajectory list (show last 10)
@@ -410,8 +410,8 @@ HTML_TEMPLATE = '''
                     const last10 = data.slice(-10).reverse();
                     trajectoryList.innerHTML = last10.map(p => `
                         <div class="trajectory-item">
-                             ${p.lat.toFixed(6)}, ${p.lng.toFixed(6)} 
-                            <span style="float: right;"> ${new Date(p.time).toLocaleTimeString()}</span>
+                            [${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}] 
+                            <span style="float: right;">${new Date(p.time).toLocaleTimeString()}</span>
                         </div>
                     `).join('');
                 }
@@ -427,23 +427,23 @@ HTML_TEMPLATE = '''
                 const data = await response.json();
                 
                 if (data.error) {
-                    document.getElementById('statusBadge').textContent = 'WAITING FOR OBD2...';
+                    document.getElementById('statusBadge').textContent = '[ AWAITING DATA ]';
                     document.getElementById('statusBadge').className = 'status-badge status-offline';
                     return;
                 }
                 
-                document.getElementById('statusBadge').textContent = 'LIVE TRACKING';
+                document.getElementById('statusBadge').textContent = '[ ACTIVE ]';
                 document.getElementById('statusBadge').className = 'status-badge status-online';
                 
                 // Update metrics
                 document.getElementById('rpm').textContent = data.rpm || '--';
-                document.getElementById('speed').innerHTML = (data.speed || '--') + ' <span class="metric-unit">km/h</span>';
-                document.getElementById('coolant').innerHTML = (data.coolant || '--') + ' <span class="metric-unit">°C</span>';
+                document.getElementById('speed').innerHTML = (data.speed || '--') + ' <span class="metric-unit">KM/H</span>';
+                document.getElementById('coolant').innerHTML = (data.coolant || '--') + ' <span class="metric-unit">C</span>';
                 document.getElementById('load').innerHTML = (data.load || '--') + ' <span class="metric-unit">%</span>';
                 document.getElementById('throttle').innerHTML = (data.throttle || '--') + ' <span class="metric-unit">%</span>';
                 document.getElementById('battery').innerHTML = (data.batt || '--') + ' <span class="metric-unit">V</span>';
                 document.getElementById('fuel').innerHTML = (data.fuel || '--') + ' <span class="metric-unit">%</span>';
-                document.getElementById('maf').innerHTML = (data.maf || '--') + ' <span class="metric-unit">g/s</span>';
+                document.getElementById('maf').innerHTML = (data.maf || '--') + ' <span class="metric-unit">G/S</span>';
                 
                 // Update bars
                 const rpmPct = Math.min(100, (data.rpm || 0) / 80);
@@ -456,26 +456,12 @@ HTML_TEMPLATE = '''
             }
         }
 
-        // Create floating hearts
-        function createHeart() {
-            const heart = document.createElement('div');
-            heart.innerHTML = ['🌸', '💕', '💖', '💗', '💓', '🌸'][Math.floor(Math.random() * 6)];
-            heart.className = 'heart';
-            heart.style.left = Math.random() * 100 + '%';
-            heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
-            heart.style.animationDuration = Math.random() * 8 + 5 + 's';
-            heart.style.animationDelay = Math.random() * 5 + 's';
-            document.body.appendChild(heart);
-            setTimeout(() => heart.remove(), 13000);
-        }
-
         // Start everything
         initMap();
         fetchGPS();
         fetchOBD2();
         setInterval(fetchGPS, 3000);
         setInterval(fetchOBD2, 2000);
-        setInterval(createHeart, 3000);
     </script>
 </body>
 </html>
