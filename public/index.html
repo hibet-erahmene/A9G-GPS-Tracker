@@ -432,7 +432,10 @@
                 document.getElementById('battery').innerHTML = (data.batt || '--') + ' <span class="metric-unit">V</span>';
                 document.getElementById('fuel').innerHTML = (data.fuel || '--') + ' <span class="metric-unit">%</span>';
                 document.getElementById('maf').innerHTML = (data.maf || '--') + ' <span class="metric-unit">G/S</span>';
-                
+                document.getElementById('fuelCons').innerHTML = (data.fuel_consumption || '--') + ' <span class="metric-unit">L/100</span>';
+                document.getElementById('co2').innerHTML = (data.co2_g_per_km || '--') + ' <span class="metric-unit">G/KM</span>';
+                const co2Pct = Math.min(100, (data.co2_g_per_km || 0) / 3);
+                document.getElementById('co2Bar').style.width = co2Pct + '%';
                 // Update bars
                 const rpmPct = Math.min(100, (data.rpm || 0) / 80);
                 document.getElementById('rpmBar').style.width = rpmPct + '%';
