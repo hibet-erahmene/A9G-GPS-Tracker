@@ -72,6 +72,123 @@
             border-left: 3px solid #ff4444;
         }
 
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .btn {
+            background: #1a1a2e;
+            color: #4a9eff;
+            border: 1px solid #4a9eff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #4a9eff;
+            color: #1a1a2e;
+            box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
+        }
+
+        .btn-danger {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .btn-danger:hover {
+            background: #ff4444;
+            color: #1a1a2e;
+        }
+
+        .btn-success {
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .btn-success:hover {
+            background: #00ff88;
+            color: #1a1a2e;
+        }
+
+        /* Saved Routes Panel */
+        .saved-routes {
+            margin-top: 15px;
+            background: #1a1a2e;
+            border-radius: 6px;
+            padding: 12px;
+            border: 1px solid #2a2a4a;
+        }
+
+        .saved-routes h4 {
+            color: #c8c8e8;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .route-item {
+            background: #0f0f1a;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            font-size: 0.65rem;
+            font-family: 'Share Tech Mono', monospace;
+            color: #8a8aaa;
+            border-left: 2px solid #4a9eff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .route-name {
+            font-weight: 600;
+            color: #4a9eff;
+        }
+
+        .route-stats {
+            font-size: 0.6rem;
+            color: #6a6a8a;
+        }
+
+        .route-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .route-btn {
+            background: none;
+            border: none;
+            color: #4a9eff;
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .route-btn:hover {
+            background: #2a2a4a;
+        }
+
+        .route-btn-restore {
+            color: #00ff88;
+        }
+
+        .route-btn-delete {
+            color: #ff4444;
+        }
+
         /* Grid layout */
         .dashboard-grid {
             display: grid;
@@ -268,6 +385,11 @@
             <h1>GPS + OBD2 TRACKER</h1>
             <p>REAL-TIME TELEMETRY SYSTEM</p>
             <div class="status-badge" id="statusBadge">[ CONNECTING... ]</div>
+            <div class="button-group">
+                <button class="btn" id="saveRouteBtn">💾 SAVE CURRENT ROUTE</button>
+                <button class="btn btn-danger" id="clearMapBtn">🗑️ CLEAR MAP</button>
+                <button class="btn btn-success" id="clearAllRoutesBtn">📁 CLEAR ALL SAVED</button>
+            </div>
         </div>
 
         <div class="dashboard-grid">
@@ -346,6 +468,14 @@
             </div>
         </div>
 
+        <!-- Saved Routes Panel -->
+        <div class="card">
+            <h3>[ SAVED ROUTES ]</h3>
+            <div class="saved-routes" id="savedRoutesPanel">
+                <div style="text-align: center; color: #6a6a8a;">NO SAVED ROUTES</div>
+            </div>
+        </div>
+
         <!-- Trajectory History -->
         <div class="card">
             <h3>[ JOURNEY LOG ]</h3>
@@ -364,6 +494,121 @@
         let marker = null;
         let path = [];
         let polyline = null;
+        let savedRoutes = [];
+        let routeCounter = 1;
+
+        // Load saved routes from localStorage
+        function loadSavedRoutes() {
+            const stored = localStorage.getItem('savedRoutes');
+            if (stored) {
+                savedRoutes = JSON.parse(stored);
+                routeCounter = savedRoutes.length + 1;
+                updateSavedRoutesPanel();
+            }
+        }
+
+        // Save routes to localStorage
+        function persistRoutes() {
+            localStorage.setItem('savedRoutes', JSON.stringify(savedRoutes));
+        }
+
+        // Update the saved routes panel
+        function updateSavedRoutesPanel() {
+            const panel = document.getElementById('savedRoutesPanel');
+            if (savedRoutes.length === 0) {
+                panel.innerHTML = '<div style="text-align: center; color: #6a6a8a;">NO SAVED ROUTES</div>';
+                return;
+            }
+
+            panel.innerHTML = savedRoutes.map((route, idx) => `
+                <div class="route-item">
+                    <div>
+                        <div class="route-name">${route.name}</div>
+                        <div class="route-stats">${route.points.length} points | ${new Date(route.savedAt).toLocaleString()}</div>
+                    </div>
+                    <div class="route-actions">
+                        <button class="route-btn route-btn-restore" onclick="restoreRoute(${idx})">RESTORE</button>
+                        <button class="route-btn route-btn-delete" onclick="deleteRoute(${idx})">DELETE</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Save current route
+        function saveCurrentRoute() {
+            if (path.length === 0) {
+                alert('No route to save! Wait for GPS data first.');
+                return;
+            }
+
+            const routeName = `ROUTE_${routeCounter}`;
+            savedRoutes.push({
+                name: routeName,
+                points: [...path],
+                savedAt: new Date().toISOString()
+            });
+            routeCounter++;
+            persistRoutes();
+            updateSavedRoutesPanel();
+            alert(`Route "${routeName}" saved with ${path.length} points!`);
+        }
+
+        // Restore a saved route
+        function restoreRoute(index) {
+            const route = savedRoutes[index];
+            if (confirm(`Load "${route.name}" on map? Current route will be cleared.`)) {
+                clearMap();
+                path = [...route.points];
+                drawPath();
+                alert(`Route "${route.name}" loaded!`);
+            }
+        }
+
+        // Delete a saved route
+        function deleteRoute(index) {
+            const routeName = savedRoutes[index].name;
+            if (confirm(`Delete "${routeName}"?`)) {
+                savedRoutes.splice(index, 1);
+                persistRoutes();
+                updateSavedRoutesPanel();
+                alert(`Route "${routeName}" deleted!`);
+            }
+        }
+
+        // Clear map without saving
+        function clearMap() {
+            if (polyline !== null) {
+                map.removeLayer(polyline);
+                polyline = null;
+            }
+            if (marker !== null) {
+                map.removeLayer(marker);
+                marker = null;
+            }
+            path = [];
+            document.getElementById('totalPoints').textContent = '0';
+            console.log('Map cleared');
+        }
+
+        // Draw the current path
+        function drawPath() {
+            if (path.length === 0) return;
+            
+            // Add marker for last point
+            const lastPoint = path[path.length - 1];
+            if (marker !== null) {
+                map.removeLayer(marker);
+            }
+            marker = L.marker([lastPoint[0], lastPoint[1]]).addTo(map);
+            marker.bindPopup('<b>CURRENT POSITION</b><br>Lat: ' + lastPoint[0].toFixed(6) + '<br>Lng: ' + lastPoint[1].toFixed(6));
+            
+            // Draw polyline
+            if (polyline !== null) {
+                map.removeLayer(polyline);
+            }
+            polyline = L.polyline(path, {color: '#4a9eff', weight: 3, opacity: 0.8}).addTo(map);
+            map.setView([lastPoint[0], lastPoint[1]], 15);
+        }
 
         // Initialize map
         function initMap() {
@@ -388,19 +633,9 @@
                     document.getElementById('latestTime').textContent = new Date(latest.time).toLocaleString();
                     document.getElementById('totalPoints').textContent = data.length;
                     
-                    // Update map
-                    if (marker === null) {
-                        marker = L.marker([latest.lat, latest.lng]).addTo(map);
-                        marker.bindPopup('<b>CURRENT POSITION</b><br>Lat: ' + latest.lat.toFixed(6) + '<br>Lng: ' + latest.lng.toFixed(6));
-                    } else {
-                        marker.setLatLng([latest.lat, latest.lng]);
-                    }
-                    
-                    // Draw path
+                    // Update path and map
                     path = data.map(p => [p.lat, p.lng]);
-                    if (polyline !== null) map.removeLayer(polyline);
-                    polyline = L.polyline(path, {color: '#4a9eff', weight: 3, opacity: 0.8}).addTo(map);
-                    map.setView([latest.lat, latest.lng], 15);
+                    drawPath();
                     
                     // Update trajectory list (show last 10)
                     const trajectoryList = document.getElementById('trajectoryList');
@@ -457,8 +692,25 @@
             }
         }
 
+        // Clear all saved routes
+        function clearAllRoutes() {
+            if (confirm('Delete ALL saved routes? This cannot be undone!')) {
+                savedRoutes = [];
+                routeCounter = 1;
+                persistRoutes();
+                updateSavedRoutesPanel();
+                alert('All saved routes deleted!');
+            }
+        }
+
+        // Button event listeners
+        document.getElementById('saveRouteBtn').addEventListener('click', saveCurrentRoute);
+        document.getElementById('clearMapBtn').addEventListener('click', clearMap);
+        document.getElementById('clearAllRoutesBtn').addEventListener('click', clearAllRoutes);
+
         // Start everything
         initMap();
+        loadSavedRoutes();
         fetchGPS();
         fetchOBD2();
         setInterval(fetchGPS, 3000);
