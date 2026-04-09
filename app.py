@@ -52,7 +52,6 @@ DUMMY_COLUMNS = [
     'Vehicle_Class_Type_SUV', 'Vehicle_Class_Type_Sedan', 'Vehicle_Class_Type_Truck'
 ]
 
-# pca22 was dropped during feature selection — skip it
 SELECTED_PCA = [
     'pca0','pca1','pca2','pca3','pca4','pca5','pca6','pca7',
     'pca8','pca9','pca10','pca11','pca12','pca13','pca14','pca15',
@@ -154,6 +153,7 @@ def gps_handler():
     if request.method == "GET":
         return jsonify(gps_log)
 
+    # Handle both JSON and form data
     if request.is_json:
         data = request.get_json()
     else:
@@ -184,17 +184,34 @@ def obd2_handler():
         return jsonify(obd2_data)
 
     try:
-        data = request.get_json()
+        # Handle both JSON and form data (FIXED)
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form
+        
         if not data:
             return jsonify({"error": "invalid data"}), 400
 
-        obd2_data = data
-        obd2_data["last_update"] = datetime.utcnow().isoformat()
-
+        # Convert form data to dictionary with proper types
+        obd2_data = {
+            "rpm": int(data.get("rpm", 0)),
+            "speed": int(data.get("speed", 0)),
+            "coolant": int(data.get("coolant", 0)),
+            "iat": int(data.get("iat", 0)),
+            "load": float(data.get("load", 0)),
+            "throttle": float(data.get("throttle", 0)),
+            "map": int(data.get("map", 0)),
+            "maf": float(data.get("maf", 0)),
+            "fuel": float(data.get("fuel", 0)),
+            "batt": float(data.get("batt", 0)),
+            "last_update": datetime.utcnow().isoformat()
+        }
+        
         # MAF → fuel consumption
         fuel_L_per_100km = maf_to_fuel(
-            data.get("maf"),
-            data.get("speed")
+            obd2_data.get("maf"),
+            obd2_data.get("speed")
         )
         obd2_data["fuel_consumption"] = fuel_L_per_100km
 
@@ -202,24 +219,20 @@ def obd2_handler():
         co2 = None
         if fuel_L_per_100km:
             co2 = predict_co2(
-                engine_size   = float(data.get("engine_size",  2.0)),
-                cylinders     = int(data.get("cylinders",      4)),
+                engine_size   = float(data.get("engine_size", 2.0)),
+                cylinders     = int(data.get("cylinders", 4)),
                 fuel_comb     = fuel_L_per_100km,
-                fuel_type     = data.get("fuel_type",     "X"),
-                transmission  = data.get("transmission",  "A6"),
-                make_type     = data.get("make_type",     "General"),
+                fuel_type     = data.get("fuel_type", "X"),
+                transmission  = data.get("transmission", "A6"),
+                make_type     = data.get("make_type", "General"),
                 vehicle_class = data.get("vehicle_class", "Sedan")
             )
         obd2_data["co2_g_per_km"] = co2
 
-        print(f"[OBD2] maf={data.get('maf')} speed={data.get('speed')}")
-        print(f"[CO2]  fuel={fuel_L_per_100km} L/100km → {co2} g/km")
+        print(f"[OBD2] RPM={obd2_data['rpm']} SPEED={obd2_data['speed']} MAF={obd2_data['maf']}")
+        print(f"[CO2] Fuel={fuel_L_per_100km} L/100km → {co2} g/km")
 
-        return jsonify({
-            "ok": True,
-            "fuel_L_per_100km": fuel_L_per_100km,
-            "co2_g_per_km": co2
-        }), 200
+        return jsonify({"ok": True}), 200
 
     except Exception as e:
         print(f"[OBD2] Error: {e}")
