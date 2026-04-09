@@ -67,12 +67,29 @@ def maf_to_fuel(maf_g_per_s, speed_kmh):
     """MAF (g/s) + speed (km/h) → L/100km"""
     if not maf_g_per_s or not speed_kmh or float(speed_kmh) == 0:
         return None
-    maf   = float(maf_g_per_s)
+    
+    maf = float(maf_g_per_s)
     speed = float(speed_kmh)
-    fuel_g_per_s   = maf / 14.7
-    fuel_L_per_s   = fuel_g_per_s / 740
-    speed_m_per_s  = speed / 3.6
+    
+    # Minimum realistic MAF check (prevents negative CO2)
+    # A car needs roughly 10-15 g/s per 100 km/h
+    min_maf_for_speed = speed * 0.12
+    if maf < min_maf_for_speed:
+        print(f"[WARNING] MAF too low: {maf}g/s at {speed}km/h, using minimum {min_maf_for_speed:.1f}")
+        maf = min_maf_for_speed
+    
+    # Stoichiometric ratio for gasoline (14.7:1)
+    fuel_g_per_s = maf / 14.7
+    fuel_L_per_s = fuel_g_per_s / 740  # 740g/L for gasoline
+    speed_m_per_s = speed / 3.6
     fuel_L_per_100km = (fuel_L_per_s / speed_m_per_s) * 100000
+    
+    # Ensure realistic range (4-25 L/100km for normal driving)
+    if fuel_L_per_100km < 4:
+        fuel_L_per_100km = 4
+    if fuel_L_per_100km > 25:
+        fuel_L_per_100km = 25
+    
     return round(fuel_L_per_100km, 2)
 
 # ── Full prediction pipeline ──────────────────────────────────────────────────
