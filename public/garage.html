@@ -78,6 +78,22 @@ body{
 .co2-label{font-size:.55rem;letter-spacing:2px;color:#8a8aaa;font-family:'Share Tech Mono',monospace}
 .co2-val{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;color:#4a9eff}
 
+/* ── Device ID badge ── */
+.device-id-row{
+  margin-top:10px;padding:7px 10px;border-radius:4px;
+  background:rgba(124,77,255,.08);border:1px solid rgba(124,77,255,.2);
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+}
+.device-id-label{font-size:.5rem;letter-spacing:2px;color:#8a8aaa;font-family:'Share Tech Mono',monospace;white-space:nowrap}
+.device-id-code{font-family:'Share Tech Mono',monospace;font-size:.75rem;color:#b39ddb;letter-spacing:2px;font-weight:700}
+.copy-btn{
+  background:transparent;border:1px solid rgba(124,77,255,.35);
+  color:#b39ddb;border-radius:3px;padding:2px 8px;font-size:.55rem;
+  font-family:'Share Tech Mono',monospace;cursor:pointer;transition:all .2s;
+  white-space:nowrap;letter-spacing:1px;
+}
+.copy-btn:hover{background:rgba(124,77,255,.2);border-color:#b39ddb}
+
 .delete-btn{
   position:absolute;top:10px;right:10px;
   width:22px;height:22px;border-radius:3px;
@@ -419,10 +435,23 @@ function hidePreview(){
 }
 
 // ── Garage ───────────────────────────────────────────────────────────────────
+function makeDeviceId() {
+  // 4 random hex chars → e.g. "CAR-A3F9"
+  return 'CAR-' + Math.floor(Math.random()*0x10000).toString(16).toUpperCase().padStart(4,'0');
+}
+
+function copyDeviceId(id, btn) {
+  const code = garage.find(c=>c.id===id)?.device_id || '';
+  navigator.clipboard.writeText(code).then(()=>{
+    btn.textContent='COPIED!';
+    setTimeout(()=>{ btn.textContent='COPY'; }, 1500);
+  });
+}
+
 function addCar() {
   if (!selectedCar) return;
   const nick=document.getElementById('carNickname').value.trim()||'';
-  garage.push({...selectedCar, nickname:nick, id:Date.now()});
+  garage.push({...selectedCar, nickname:nick, id:Date.now(), device_id:makeDeviceId()});
   saveGarage(); renderGarage();
   resetFrom('model');
   document.getElementById('selMake').value='';
@@ -440,6 +469,7 @@ function deleteCar(id,e) {
 
 function openDashboard(car) {
   sessionStorage.setItem('activeCar', JSON.stringify(car));
+  // device_id is included in the car object already
   window.location.href='/';
 }
 
@@ -466,6 +496,11 @@ function renderGarage() {
       <div class="car-co2">
         <span class="co2-label">DATASET CO2</span>
         <span class="co2-val">${car.co2} G/KM</span>
+      </div>
+      <div class="device-id-row" onclick="event.stopPropagation()">
+        <span class="device-id-label">DEVICE ID</span>
+        <span class="device-id-code">${car.device_id||'—'}</span>
+        <button class="copy-btn" onclick="copyDeviceId(${car.id},this)">COPY</button>
       </div>
     </div>`).join('');
 }
