@@ -26,7 +26,6 @@
             margin: 0 auto;
         }
 
-        /* Header */
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -72,12 +71,12 @@
             border-left: 3px solid #ff4444;
         }
 
-        /* Buttons */
         .button-group {
             display: flex;
             gap: 10px;
             justify-content: center;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -120,13 +119,24 @@
             color: #1a1a2e;
         }
 
-        /* Saved Routes Panel */
+        .btn-warning {
+            border-color: #ffaa00;
+            color: #ffaa00;
+        }
+
+        .btn-warning:hover {
+            background: #ffaa00;
+            color: #1a1a2e;
+        }
+
         .saved-routes {
             margin-top: 15px;
             background: #1a1a2e;
             border-radius: 6px;
             padding: 12px;
             border: 1px solid #2a2a4a;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
         .saved-routes h4 {
@@ -189,7 +199,6 @@
             color: #ff4444;
         }
 
-        /* Grid layout */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -197,7 +206,6 @@
             margin-bottom: 20px;
         }
 
-        /* Cards */
         .card {
             background: rgba(26, 26, 46, 0.85);
             backdrop-filter: blur(8px);
@@ -223,7 +231,6 @@
             font-weight: 600;
         }
 
-        /* Map */
         #map {
             height: 400px;
             border-radius: 6px;
@@ -231,7 +238,6 @@
             border: 2px solid #3a3a5a;
         }
 
-        /* OBD2 metrics grid */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -288,7 +294,6 @@
             width: 0%;
         }
 
-        /* GPS info panel */
         .gps-info {
             margin-top: 15px;
             background: #1a1a2e;
@@ -320,7 +325,6 @@
             font-weight: 600;
         }
 
-        /* Trajectory list */
         .trajectory-list {
             max-height: 300px;
             overflow-y: auto;
@@ -338,7 +342,6 @@
             border-left: 2px solid #4a9eff;
         }
 
-        /* Footer */
         .footer {
             text-align: center;
             margin-top: 30px;
@@ -350,7 +353,6 @@
             border-top: 1px solid #3a3a5a;
         }
 
-        /* Scrollbar */
         .trajectory-list::-webkit-scrollbar {
             width: 6px;
         }
@@ -365,7 +367,6 @@
             border-radius: 3px;
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
@@ -388,286 +389,177 @@
             <div class="button-group">
                 <button class="btn" id="saveRouteBtn">💾 SAVE CURRENT ROUTE</button>
                 <button class="btn btn-danger" id="clearMapBtn">🗑️ CLEAR MAP</button>
-                <button class="btn btn-success" id="clearAllRoutesBtn">📁 CLEAR ALL SAVED</button>
+                <button class="btn btn-warning" id="stopAutoRefreshBtn">⏸️ STOP REFRESH</button>
+                <button class="btn btn-success" id="startAutoRefreshBtn">▶️ START REFRESH</button>
+                <button class="btn" id="clearAllRoutesBtn">📁 CLEAR ALL SAVED</button>
             </div>
         </div>
 
         <div class="dashboard-grid">
-            <!-- Left column: Map -->
             <div class="card">
                 <h3>[ LOCATION TRACKING ]</h3>
                 <div id="map"></div>
                 <div class="gps-info">
-                    <div class="gps-info-row">
-                        <span class="gps-info-label">LATITUDE:</span>
-                        <span class="gps-info-value" id="latestLat">--</span>
-                    </div>
-                    <div class="gps-info-row">
-                        <span class="gps-info-label">LONGITUDE:</span>
-                        <span class="gps-info-value" id="latestLng">--</span>
-                    </div>
-                    <div class="gps-info-row">
-                        <span class="gps-info-label">LAST UPDATE:</span>
-                        <span class="gps-info-value" id="latestTime">--</span>
-                    </div>
-                    <div class="gps-info-row">
-                        <span class="gps-info-label">TOTAL POINTS:</span>
-                        <span class="gps-info-value" id="totalPoints">0</span>
-                    </div>
+                    <div class="gps-info-row"><span class="gps-info-label">LATITUDE:</span><span class="gps-info-value" id="latestLat">--</span></div>
+                    <div class="gps-info-row"><span class="gps-info-label">LONGITUDE:</span><span class="gps-info-value" id="latestLng">--</span></div>
+                    <div class="gps-info-row"><span class="gps-info-label">LAST UPDATE:</span><span class="gps-info-value" id="latestTime">--</span></div>
+                    <div class="gps-info-row"><span class="gps-info-label">TOTAL POINTS:</span><span class="gps-info-value" id="totalPoints">0</span></div>
                 </div>
             </div>
 
-            <!-- Right column: OBD2 Data -->
             <div class="card">
                 <h3>[ ENGINE DATA ]</h3>
                 <div class="metrics-grid">
-                    <div class="metric">
-                        <div class="metric-label">RPM</div>
-                        <div class="metric-value" id="rpm">--</div>
-                        <div class="metric-bar"><div class="metric-bar-fill" id="rpmBar"></div></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">SPEED</div>
-                        <div class="metric-value" id="speed">-- <span class="metric-unit">KM/H</span></div>
-                        <div class="metric-bar"><div class="metric-bar-fill" id="speedBar"></div></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">COOLANT</div>
-                        <div class="metric-value" id="coolant">-- <span class="metric-unit">C</span></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">ENGINE LOAD</div>
-                        <div class="metric-value" id="load">-- <span class="metric-unit">%</span></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">THROTTLE</div>
-                        <div class="metric-value" id="throttle">-- <span class="metric-unit">%</span></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">BATTERY</div>
-                        <div class="metric-value" id="battery">-- <span class="metric-unit">V</span></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">FUEL LEVEL</div>
-                        <div class="metric-value" id="fuel">-- <span class="metric-unit">%</span></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">MAF RATE</div>
-                        <div class="metric-value" id="maf">-- <span class="metric-unit">G/S</span></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">FUEL CONS</div>
-                        <div class="metric-value" id="fuelCons">-- <span class="metric-unit">L/100KM</span></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-label">CO2 EMISSION</div>
-                        <div class="metric-value" id="co2">-- <span class="metric-unit">G/KM</span></div>
-                        <div class="metric-bar"><div class="metric-bar-fill" id="co2Bar"></div></div>
-                    </div>
+                    <div class="metric"><div class="metric-label">RPM</div><div class="metric-value" id="rpm">--</div><div class="metric-bar"><div class="metric-bar-fill" id="rpmBar"></div></div></div>
+                    <div class="metric"><div class="metric-label">SPEED</div><div class="metric-value" id="speed">-- <span class="metric-unit">KM/H</span></div><div class="metric-bar"><div class="metric-bar-fill" id="speedBar"></div></div></div>
+                    <div class="metric"><div class="metric-label">COOLANT</div><div class="metric-value" id="coolant">-- <span class="metric-unit">C</span></div></div>
+                    <div class="metric"><div class="metric-label">ENGINE LOAD</div><div class="metric-value" id="load">-- <span class="metric-unit">%</span></div></div>
+                    <div class="metric"><div class="metric-label">THROTTLE</div><div class="metric-value" id="throttle">-- <span class="metric-unit">%</span></div></div>
+                    <div class="metric"><div class="metric-label">BATTERY</div><div class="metric-value" id="battery">-- <span class="metric-unit">V</span></div></div>
+                    <div class="metric"><div class="metric-label">FUEL LEVEL</div><div class="metric-value" id="fuel">-- <span class="metric-unit">%</span></div></div>
+                    <div class="metric"><div class="metric-label">MAF RATE</div><div class="metric-value" id="maf">-- <span class="metric-unit">G/S</span></div></div>
+                    <div class="metric"><div class="metric-label">FUEL CONS</div><div class="metric-value" id="fuelCons">-- <span class="metric-unit">L/100KM</span></div></div>
+                    <div class="metric"><div class="metric-label">CO2 EMISSION</div><div class="metric-value" id="co2">-- <span class="metric-unit">G/KM</span></div><div class="metric-bar"><div class="metric-bar-fill" id="co2Bar"></div></div></div>
                 </div>
             </div>
         </div>
 
-        <!-- Saved Routes Panel -->
         <div class="card">
             <h3>[ SAVED ROUTES ]</h3>
-            <div class="saved-routes" id="savedRoutesPanel">
-                <div style="text-align: center; color: #6a6a8a;">NO SAVED ROUTES</div>
-            </div>
+            <div class="saved-routes" id="savedRoutesPanel"><div style="text-align: center; color: #6a6a8a;">NO SAVED ROUTES</div></div>
         </div>
 
-        <!-- Trajectory History -->
         <div class="card">
             <h3>[ JOURNEY LOG ]</h3>
-            <div class="trajectory-list" id="trajectoryList">
-                <div style="text-align: center; color: #6a6a8a;">WAITING FOR DATA...</div>
-            </div>
+            <div class="trajectory-list" id="trajectoryList"><div style="text-align: center; color: #6a6a8a;">WAITING FOR DATA...</div></div>
         </div>
 
-        <div class="footer">
-            TELEMETRY SYSTEM v1.0 | SECURE DATA STREAM | REAL-TIME MONITORING
-        </div>
+        <div class="footer">TELEMETRY SYSTEM v1.0 | SECURE DATA STREAM | REAL-TIME MONITORING</div>
     </div>
 
     <script>
-        let map;
-        let marker = null;
-        let path = [];
-        let polyline = null;
-        let savedRoutes = [];
-        let routeCounter = 1;
+        let map, marker = null, path = [], polyline = null;
+        let savedRoutes = [], routeCounter = 1;
+        let autoRefreshEnabled = true;
+        let gpsInterval, obd2Interval;
 
-        // Load saved routes from localStorage
         function loadSavedRoutes() {
             const stored = localStorage.getItem('savedRoutes');
-            if (stored) {
-                savedRoutes = JSON.parse(stored);
-                routeCounter = savedRoutes.length + 1;
-                updateSavedRoutesPanel();
-            }
+            if (stored) { savedRoutes = JSON.parse(stored); routeCounter = savedRoutes.length + 1; updateSavedRoutesPanel(); }
         }
-
-        // Save routes to localStorage
-        function persistRoutes() {
-            localStorage.setItem('savedRoutes', JSON.stringify(savedRoutes));
-        }
-
-        // Update the saved routes panel
+        function persistRoutes() { localStorage.setItem('savedRoutes', JSON.stringify(savedRoutes)); }
+        
         function updateSavedRoutesPanel() {
             const panel = document.getElementById('savedRoutesPanel');
-            if (savedRoutes.length === 0) {
-                panel.innerHTML = '<div style="text-align: center; color: #6a6a8a;">NO SAVED ROUTES</div>';
-                return;
-            }
-
-            panel.innerHTML = savedRoutes.map((route, idx) => `
-                <div class="route-item">
-                    <div>
-                        <div class="route-name">${route.name}</div>
-                        <div class="route-stats">${route.points.length} points | ${new Date(route.savedAt).toLocaleString()}</div>
-                    </div>
-                    <div class="route-actions">
-                        <button class="route-btn route-btn-restore" onclick="restoreRoute(${idx})">RESTORE</button>
-                        <button class="route-btn route-btn-delete" onclick="deleteRoute(${idx})">DELETE</button>
-                    </div>
-                </div>
-            `).join('');
+            if (!savedRoutes.length) { panel.innerHTML = '<div style="text-align: center; color: #6a6a8a;">NO SAVED ROUTES</div>'; return; }
+            panel.innerHTML = savedRoutes.map((route, idx) => `<div class="route-item"><div><div class="route-name">${route.name}</div><div class="route-stats">${route.points.length} points | ${new Date(route.savedAt).toLocaleString()}</div></div><div class="route-actions"><button class="route-btn route-btn-restore" onclick="restoreRoute(${idx})">RESTORE</button><button class="route-btn route-btn-delete" onclick="deleteRoute(${idx})">DELETE</button></div></div>`).join('');
         }
 
-        // Save current route
         function saveCurrentRoute() {
-            if (path.length === 0) {
-                alert('No route to save! Wait for GPS data first.');
-                return;
-            }
-
+            if (!path.length) { alert('No route to save!'); return; }
             const routeName = `ROUTE_${routeCounter}`;
-            savedRoutes.push({
-                name: routeName,
-                points: [...path],
-                savedAt: new Date().toISOString()
-            });
-            routeCounter++;
-            persistRoutes();
-            updateSavedRoutesPanel();
+            savedRoutes.push({ name: routeName, points: [...path], savedAt: new Date().toISOString() });
+            routeCounter++; persistRoutes(); updateSavedRoutesPanel();
             alert(`Route "${routeName}" saved with ${path.length} points!`);
         }
 
-        // Restore a saved route
         function restoreRoute(index) {
             const route = savedRoutes[index];
-            if (confirm(`Load "${route.name}" on map? Current route will be cleared.`)) {
-                clearMap();
-                path = [...route.points];
-                drawPath();
-                alert(`Route "${route.name}" loaded!`);
-            }
+            if (confirm(`Load "${route.name}"?`)) { clearMapOnly(); path = [...route.points]; drawPath(); alert(`Route "${route.name}" loaded!`); }
         }
 
-        // Delete a saved route
         function deleteRoute(index) {
-            const routeName = savedRoutes[index].name;
-            if (confirm(`Delete "${routeName}"?`)) {
-                savedRoutes.splice(index, 1);
-                persistRoutes();
-                updateSavedRoutesPanel();
-                alert(`Route "${routeName}" deleted!`);
-            }
+            if (confirm(`Delete "${savedRoutes[index].name}"?`)) { savedRoutes.splice(index, 1); persistRoutes(); updateSavedRoutesPanel(); alert('Route deleted!'); }
         }
 
-        // Clear map without saving
-        function clearMap() {
-            if (polyline !== null) {
-                map.removeLayer(polyline);
-                polyline = null;
-            }
-            if (marker !== null) {
-                map.removeLayer(marker);
-                marker = null;
-            }
+        function clearMapOnly() {
+            if (polyline) { map.removeLayer(polyline); polyline = null; }
+            if (marker) { map.removeLayer(marker); marker = null; }
             path = [];
             document.getElementById('totalPoints').textContent = '0';
-            console.log('Map cleared');
         }
 
-        // Draw the current path
-        function drawPath() {
-            if (path.length === 0) return;
+        // FIXED: This function now clears server data too
+        async function clearMapAndServer() {
+            if (!confirm('🗑️ CLEAR ALL GPS DATA?\n\nThis will delete all points from the map AND server. New GPS data will start fresh.')) return;
             
-            // Add marker for last point
-            const lastPoint = path[path.length - 1];
-            if (marker !== null) {
-                map.removeLayer(marker);
+            const btn = document.getElementById('clearMapBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ CLEARING...';
+            btn.disabled = true;
+            
+            try {
+                // Call server to delete GPS data
+                const response = await fetch('/clear', { method: 'POST' });
+                if (!response.ok) throw new Error('Server clear failed');
+                
+                // Clear local map
+                clearMapOnly();
+                
+                // Clear UI displays
+                document.getElementById('trajectoryList').innerHTML = '<div style="text-align: center; color: #6a6a8a;">WAITING FOR DATA...</div>';
+                document.getElementById('latestLat').textContent = '--';
+                document.getElementById('latestLng').textContent = '--';
+                document.getElementById('latestTime').textContent = '--';
+                document.getElementById('totalPoints').textContent = '0';
+                
+                alert('✅ Map and server data cleared!');
+            } catch (error) {
+                console.error('Clear error:', error);
+                alert('❌ Error clearing data: ' + error.message);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
+        }
+
+        function drawPath() {
+            if (!path.length) return;
+            const lastPoint = path[path.length - 1];
+            if (marker) map.removeLayer(marker);
             marker = L.marker([lastPoint[0], lastPoint[1]]).addTo(map);
             marker.bindPopup('<b>CURRENT POSITION</b><br>Lat: ' + lastPoint[0].toFixed(6) + '<br>Lng: ' + lastPoint[1].toFixed(6));
-            
-            // Draw polyline
-            if (polyline !== null) {
-                map.removeLayer(polyline);
-            }
+            if (polyline) map.removeLayer(polyline);
             polyline = L.polyline(path, {color: '#4a9eff', weight: 3, opacity: 0.8}).addTo(map);
             map.setView([lastPoint[0], lastPoint[1]], 15);
         }
 
-        // Initialize map
         function initMap() {
             map = L.map('map').setView([36.897028, 7.756056], 14);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OSM & CartoDB',
-                subdomains: 'abcd',
-                maxZoom: 19
-            }).addTo(map);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OSM & CartoDB', subdomains: 'abcd', maxZoom: 19 }).addTo(map);
         }
 
-        // Fetch GPS data
         async function fetchGPS() {
+            if (!autoRefreshEnabled) return;
             try {
                 const response = await fetch('/gps');
                 const data = await response.json();
-                
                 if (data.length > 0) {
                     const latest = data[data.length - 1];
                     document.getElementById('latestLat').textContent = latest.lat.toFixed(6);
                     document.getElementById('latestLng').textContent = latest.lng.toFixed(6);
                     document.getElementById('latestTime').textContent = new Date(latest.time).toLocaleString();
                     document.getElementById('totalPoints').textContent = data.length;
-                    
-                    // Update path and map
                     path = data.map(p => [p.lat, p.lng]);
                     drawPath();
-                    
-                    // Update trajectory list (show last 10)
-                    const trajectoryList = document.getElementById('trajectoryList');
                     const last10 = data.slice(-10).reverse();
-                    trajectoryList.innerHTML = last10.map(p => `
-                        <div class="trajectory-item">
-                            [${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}] 
-                            <span style="float: right;">${new Date(p.time).toLocaleTimeString()}</span>
-                        </div>
-                    `).join('');
+                    document.getElementById('trajectoryList').innerHTML = last10.map(p => `<div class="trajectory-item">[${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}] <span style="float: right;">${new Date(p.time).toLocaleTimeString()}</span></div>`).join('');
                 }
-            } catch (error) {
-                console.error('GPS fetch error:', error);
-            }
+            } catch (error) { console.error('GPS fetch error:', error); }
         }
 
-        // Fetch OBD2 data
         async function fetchOBD2() {
+            if (!autoRefreshEnabled) return;
             try {
                 const response = await fetch('/obd2');
                 const data = await response.json();
-                
                 if (data.error) {
                     document.getElementById('statusBadge').textContent = '[ AWAITING DATA ]';
                     document.getElementById('statusBadge').className = 'status-badge status-offline';
                     return;
                 }
-                
                 document.getElementById('statusBadge').textContent = '[ ACTIVE ]';
                 document.getElementById('statusBadge').className = 'status-badge status-online';
-                
-                // Update metrics
                 document.getElementById('rpm').textContent = data.rpm || '--';
                 document.getElementById('speed').innerHTML = (data.speed || '--') + ' <span class="metric-unit">KM/H</span>';
                 document.getElementById('coolant').innerHTML = (data.coolant || '--') + ' <span class="metric-unit">C</span>';
@@ -678,43 +570,46 @@
                 document.getElementById('maf').innerHTML = (data.maf || '--') + ' <span class="metric-unit">G/S</span>';
                 document.getElementById('fuelCons').innerHTML = (data.fuel_consumption || '--') + ' <span class="metric-unit">L/100KM</span>';
                 document.getElementById('co2').innerHTML = (data.co2_g_per_km || '--') + ' <span class="metric-unit">G/KM</span>';
-                
-                // Update bars
-                const rpmPct = Math.min(100, (data.rpm || 0) / 80);
-                document.getElementById('rpmBar').style.width = rpmPct + '%';
-                const speedPct = Math.min(100, (data.speed || 0) / 2);
-                document.getElementById('speedBar').style.width = speedPct + '%';
-                const co2Pct = Math.min(100, (data.co2_g_per_km || 0) / 3);
-                document.getElementById('co2Bar').style.width = co2Pct + '%';
-                
-            } catch (error) {
-                console.error('OBD2 fetch error:', error);
-            }
+                document.getElementById('rpmBar').style.width = Math.min(100, (data.rpm || 0) / 80) + '%';
+                document.getElementById('speedBar').style.width = Math.min(100, (data.speed || 0) / 2) + '%';
+                document.getElementById('co2Bar').style.width = Math.min(100, (data.co2_g_per_km || 0) / 3) + '%';
+            } catch (error) { console.error('OBD2 fetch error:', error); }
         }
 
-        // Clear all saved routes
+        function stopAutoRefresh() {
+            autoRefreshEnabled = false;
+            if (gpsInterval) clearInterval(gpsInterval);
+            if (obd2Interval) clearInterval(obd2Interval);
+            document.getElementById('statusBadge').textContent = '[ PAUSED ]';
+            document.getElementById('statusBadge').className = 'status-badge status-offline';
+        }
+
+        function startAutoRefresh() {
+            if (autoRefreshEnabled) return;
+            autoRefreshEnabled = true;
+            if (gpsInterval) clearInterval(gpsInterval);
+            if (obd2Interval) clearInterval(obd2Interval);
+            gpsInterval = setInterval(fetchGPS, 3000);
+            obd2Interval = setInterval(fetchOBD2, 2000);
+            fetchGPS(); fetchOBD2();
+        }
+
         function clearAllRoutes() {
-            if (confirm('Delete ALL saved routes? This cannot be undone!')) {
-                savedRoutes = [];
-                routeCounter = 1;
-                persistRoutes();
-                updateSavedRoutesPanel();
-                alert('All saved routes deleted!');
-            }
+            if (confirm('Delete ALL saved routes?')) { savedRoutes = []; routeCounter = 1; persistRoutes(); updateSavedRoutesPanel(); alert('All saved routes deleted!'); }
         }
 
-        // Button event listeners
         document.getElementById('saveRouteBtn').addEventListener('click', saveCurrentRoute);
-        document.getElementById('clearMapBtn').addEventListener('click', clearMap);
+        document.getElementById('clearMapBtn').addEventListener('click', clearMapAndServer);
+        document.getElementById('stopAutoRefreshBtn').addEventListener('click', stopAutoRefresh);
+        document.getElementById('startAutoRefreshBtn').addEventListener('click', startAutoRefresh);
         document.getElementById('clearAllRoutesBtn').addEventListener('click', clearAllRoutes);
 
-        // Start everything
         initMap();
         loadSavedRoutes();
+        gpsInterval = setInterval(fetchGPS, 3000);
+        obd2Interval = setInterval(fetchOBD2, 2000);
         fetchGPS();
         fetchOBD2();
-        setInterval(fetchGPS, 3000);
-        setInterval(fetchOBD2, 2000);
     </script>
 </body>
 </html>
