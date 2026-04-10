@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MY GARAGE — CO2 Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  background:#ffe8f0;
+  font-family:'Orbitron',monospace;
+  min-height:100vh;
+  padding:20px;
+}
+
+.container{max-width:1400px;margin:0 auto}
+
+/* ── Header ── */
+.header{text-align:center;margin-bottom:30px}
+.header h1{
+  font-family:'Orbitron',monospace;
+  font-size:2.2rem;font-weight:800;
+  letter-spacing:3px;color:#1a1a2e;
+  text-shadow:3px 3px 0 #d4a5b8;
+  margin-bottom:5px;
+}
+.header p{color:#4a4a5a;font-family:'Share Tech Mono',monospace;font-size:.75rem;letter-spacing:2px}
+
+/* ── Cards ── */
+.card{
+  background:rgba(26,26,46,.85);backdrop-filter:blur(8px);
+  border-radius:8px;padding:20px;
+  border:1px solid #3a3a5a;box-shadow:0 4px 12px rgba(0,0,0,.2);
+  margin-bottom:20px;
+}
+.card h3{
+  color:#c8c8e8;font-size:.85rem;letter-spacing:2px;
+  margin-bottom:15px;border-bottom:1px solid #3a3a5a;
+  padding-bottom:8px;font-weight:600;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.card h3 span{color:#4a9eff;font-size:.7rem}
+
+/* ── Garage grid ── */
+.garage-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;
+}
+
+/* ── Saved car card ── */
+.car-card{
+  background:#1a1a2e;border:1px solid #3a3a5a;
+  border-radius:8px;padding:20px;cursor:pointer;
+  transition:all .25s;position:relative;overflow:hidden;
+}
+.car-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,#4a9eff,#7c4dff);
+  opacity:0;transition:opacity .25s;
+}
+.car-card:hover{border-color:#4a9eff;transform:translateY(-2px);box-shadow:0 8px 24px rgba(74,158,255,.1)}
+.car-card:hover::before{opacity:1}
+
+.car-make{font-size:.6rem;letter-spacing:3px;color:#4a9eff;margin-bottom:4px;font-family:'Share Tech Mono',monospace}
+.car-model{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:#fff;margin-bottom:14px;letter-spacing:1px}
+.car-specs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.spec{background:#0f0f1a;border-radius:4px;padding:6px 8px;border:1px solid #2a2a4a}
+.spec-label{font-size:.55rem;color:#8a8aaa;letter-spacing:1px;font-family:'Share Tech Mono',monospace}
+.spec-val{font-size:.8rem;color:#c8c8e8;font-weight:600;margin-top:2px;font-family:'Share Tech Mono',monospace}
+.car-co2{
+  margin-top:14px;padding:8px;border-radius:4px;
+  background:rgba(74,158,255,.07);border:1px solid rgba(74,158,255,.15);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.co2-label{font-size:.55rem;letter-spacing:2px;color:#8a8aaa;font-family:'Share Tech Mono',monospace}
+.co2-val{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;color:#4a9eff}
+
+.delete-btn{
+  position:absolute;top:10px;right:10px;
+  width:22px;height:22px;border-radius:3px;
+  background:transparent;border:1px solid #3a3a5a;
+  color:#8a8aaa;cursor:pointer;font-size:.7rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;opacity:0;font-family:'Share Tech Mono',monospace;
+}
+.car-card:hover .delete-btn{opacity:1}
+.delete-btn:hover{background:#ff4444;border-color:#ff4444;color:#fff}
+
+.empty-garage{
+  grid-column:1/-1;text-align:center;padding:60px 20px;
+  border:1px dashed #3a3a5a;border-radius:8px;color:#8a8aaa;
+  font-family:'Share Tech Mono',monospace;
+}
+.empty-garage p{font-size:.7rem;letter-spacing:2px;margin-top:8px}
+
+/* ── Add car panel ── */
+.search-row{position:relative;margin-bottom:20px}
+.search-input{
+  width:100%;background:#1a1a2e;border:1px solid #3a3a5a;border-radius:6px;
+  padding:12px 16px 12px 40px;font-family:'Share Tech Mono',monospace;
+  font-size:.8rem;color:#e8e8f0;outline:none;transition:border-color .2s;
+}
+.search-input:focus{border-color:#4a9eff}
+.search-input::placeholder{color:#8a8aaa}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#8a8aaa;font-size:.9rem}
+
+.selects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:.6rem;letter-spacing:2px;color:#8a8aaa;font-family:'Share Tech Mono',monospace}
+.field select,.field input{
+  background:#1a1a2e;border:1px solid #3a3a5a;border-radius:6px;
+  padding:10px 12px;font-family:'Share Tech Mono',monospace;
+  font-size:.8rem;color:#e8e8f0;outline:none;
+  transition:border-color .2s;appearance:none;cursor:pointer;
+}
+.field select:focus,.field input:focus{border-color:#4a9eff}
+.field select:disabled{opacity:.4;cursor:not-allowed}
+
+.results-list{
+  max-height:300px;overflow-y:auto;
+  border:1px solid #3a3a5a;border-radius:6px;
+  margin-bottom:20px;display:none;
+  background:#1a1a2e;
+}
+.results-list.show{display:block}
+.result-item{
+  padding:12px 16px;border-bottom:1px solid #2a2a4a;
+  cursor:pointer;transition:background .15s;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.result-item:last-child{border-bottom:none}
+.result-item:hover{background:#13131f}
+.result-name{font-size:.8rem;color:#e8e8f0;font-family:'Share Tech Mono',monospace}
+.result-meta{font-size:.65rem;color:#8a8aaa;margin-top:2px;font-family:'Share Tech Mono',monospace}
+.result-co2{font-size:.75rem;color:#4a9eff;font-family:'Orbitron',monospace}
+
+.selected-preview{
+  background:#1a1a2e;border:1px solid #3a3a5a;
+  border-radius:6px;padding:16px;margin-bottom:20px;display:none;
+}
+.selected-preview.show{display:block}
+.preview-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.preview-title{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;color:#fff}
+.preview-badge{
+  font-size:.6rem;letter-spacing:1px;padding:3px 8px;border-radius:3px;
+  background:rgba(74,158,255,.15);color:#4a9eff;border:1px solid rgba(74,158,255,.3);
+  font-family:'Share Tech Mono',monospace;
+}
+.preview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.preview-item .pi-label{font-size:.55rem;color:#8a8aaa;letter-spacing:1px;font-family:'Share Tech Mono',monospace}
+.preview-item .pi-val{font-size:.85rem;color:#e8e8f0;margin-top:3px;font-weight:600;font-family:'Share Tech Mono',monospace}
+
+.bottom-row{display:flex;gap:12px;align-items:flex-end}
+.name-field{flex:1}
+.add-btn{
+  background:#4a9eff;color:#000;border:none;border-radius:6px;
+  padding:11px 24px;font-family:'Orbitron',monospace;
+  font-size:.7rem;font-weight:700;letter-spacing:2px;
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+  opacity:.4;pointer-events:none;
+}
+.add-btn.ready{opacity:1;pointer-events:all}
+.add-btn.ready:hover{background:#6ab8ff;transform:translateY(-1px)}
+
+/* fuel badges */
+.fuel-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:.55rem;letter-spacing:1px;font-family:'Share Tech Mono',monospace}
+.fuel-X{background:rgba(0,230,118,.1);color:#00e676;border:1px solid rgba(0,230,118,.2)}
+.fuel-Z{background:rgba(124,77,255,.1);color:#b39ddb;border:1px solid rgba(124,77,255,.2)}
+.fuel-D{background:rgba(255,171,64,.1);color:#ffab40;border:1px solid rgba(255,171,64,.2)}
+.fuel-E{background:rgba(74,158,255,.1);color:#4a9eff;border:1px solid rgba(74,158,255,.2)}
+.fuel-N{background:rgba(255,82,82,.1);color:#ff5252;border:1px solid rgba(255,82,82,.2)}
+
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#2a2a4a;border-radius:3px}
+::-webkit-scrollbar-thumb{background:#4a9eff;border-radius:3px}
+
+@media(max-width:600px){
+  .selects-grid{grid-template-columns:1fr 1fr}
+  .preview-grid{grid-template-columns:repeat(2,1fr)}
+  .bottom-row{flex-direction:column}
+  .add-btn{width:100%}
+  .header h1{font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>MY GARAGE</h1>
+    <p>SELECT A VEHICLE TO OPEN ITS DASHBOARD</p>
+  </div>
+
+  <!-- Saved cars -->
+  <div class="card">
+    <h3>[ SAVED VEHICLES ] <span id="carCount">0 CARS</span></h3>
+    <div class="garage-grid" id="garageGrid">
+      <div class="empty-garage">
+        <p>NO VEHICLES CONFIGURED YET</p>
+        <p>ADD A CAR BELOW TO GET STARTED</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add car -->
+  <div class="card">
+    <h3>[ ADD NEW VEHICLE ] <span></span></h3>
+
+    <div class="search-row">
+      <span class="search-icon">⌕</span>
+      <input class="search-input" id="searchInput" type="text"
+        placeholder="SEARCH BY MAKE OR MODEL (e.g. BMW, Corolla...)">
+    </div>
+
+    <div class="selects-grid">
+      <div class="field">
+        <label>MAKE</label>
+        <select id="selMake"><option value="">— SELECT MAKE —</option></select>
+      </div>
+      <div class="field">
+        <label>MODEL</label>
+        <select id="selModel" disabled><option value="">— SELECT MODEL —</option></select>
+      </div>
+      <div class="field">
+        <label>ENGINE SIZE (L)</label>
+        <select id="selEngine" disabled><option value="">—</option></select>
+      </div>
+      <div class="field">
+        <label>TRANSMISSION</label>
+        <select id="selTrans" disabled><option value="">—</option></select>
+      </div>
+      <div class="field">
+        <label>FUEL TYPE</label>
+        <select id="selFuel" disabled><option value="">—</option></select>
+      </div>
+    </div>
+
+    <div class="results-list" id="resultsList"></div>
+
+    <div class="selected-preview" id="selectedPreview">
+      <div class="preview-header">
+        <div class="preview-title" id="previewTitle">—</div>
+        <div class="preview-badge" id="previewBadge">—</div>
+      </div>
+      <div class="preview-grid">
+        <div class="preview-item"><div class="pi-label">ENGINE</div><div class="pi-val" id="pEngine">—</div></div>
+        <div class="preview-item"><div class="pi-label">CYLINDERS</div><div class="pi-val" id="pCyl">—</div></div>
+        <div class="preview-item"><div class="pi-label">TRANSMISSION</div><div class="pi-val" id="pTrans">—</div></div>
+        <div class="preview-item"><div class="pi-label">FUEL TYPE</div><div class="pi-val" id="pFuel">—</div></div>
+        <div class="preview-item"><div class="pi-label">FUEL COMB</div><div class="pi-val" id="pFuelComb">—</div></div>
+        <div class="preview-item"><div class="pi-label">VEHICLE CLASS</div><div class="pi-val" id="pClass">—</div></div>
+        <div class="preview-item"><div class="pi-label">CO2 (DATASET)</div><div class="pi-val" id="pCO2" style="color:#4a9eff">—</div></div>
+        <div class="preview-item"><div class="pi-label">MAKE TYPE</div><div class="pi-val" id="pMakeType">—</div></div>
+      </div>
+    </div>
+
+    <div class="bottom-row">
+      <div class="field name-field">
+        <label>NICKNAME (OPTIONAL)</label>
+        <input type="text" id="carNickname" placeholder="e.g. MY DAILY DRIVER"
+          oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <button class="add-btn" id="addBtn" onclick="addCar()">+ ADD TO GARAGE</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let allCars = [], filteredCars = [], selectedCar = null;
+let garage = JSON.parse(localStorage.getItem('garage')||'[]');
+
+const FUEL_LABELS = {X:'Regular',Z:'Premium',D:'Diesel',E:'Ethanol',N:'Natural Gas'};
+
+async function loadDataset() {
+  try {
+    const r = await fetch('/cars_dataset.json');
+    allCars  = await r.json();
+    populateMakes();
+    renderGarage();
+  } catch(e) { console.error('Could not load cars_dataset.json', e); }
+}
+
+function populateMakes() {
+  const makes = [...new Set(allCars.map(c=>c.make))].sort();
+  const sel   = document.getElementById('selMake');
+  makes.forEach(m => {
+    const o = document.createElement('option');
+    o.value=m; o.textContent=m; sel.appendChild(o);
+  });
+}
+
+// ── Cascading selects ────────────────────────────────────────────────────────
+document.getElementById('selMake').onchange = function() {
+  resetFrom('model');
+  if (!this.value) return;
+  const models = [...new Set(allCars.filter(c=>c.make===this.value).map(c=>c.model))].sort();
+  const sel = document.getElementById('selModel');
+  sel.innerHTML = '<option value="">— SELECT MODEL —</option>';
+  models.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o)});
+  sel.disabled=false;
+};
+document.getElementById('selModel').onchange = function() {
+  resetFrom('engine');
+  if (!this.value) return;
+  const make = document.getElementById('selMake').value;
+  const engines = [...new Set(allCars.filter(c=>c.make===make&&c.model===this.value).map(c=>c.engine_size))].sort((a,b)=>a-b);
+  const sel = document.getElementById('selEngine');
+  sel.innerHTML='<option value="">—</option>';
+  engines.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e+'L';sel.appendChild(o)});
+  sel.disabled=false;
+};
+document.getElementById('selEngine').onchange = function() {
+  resetFrom('trans');
+  if (!this.value) return;
+  const make=document.getElementById('selMake').value, model=document.getElementById('selModel').value;
+  const trans=[...new Set(allCars.filter(c=>c.make===make&&c.model===model&&c.engine_size==this.value).map(c=>c.transmission))].sort();
+  const sel=document.getElementById('selTrans');
+  sel.innerHTML='<option value="">—</option>';
+  trans.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o)});
+  sel.disabled=false;
+};
+document.getElementById('selTrans').onchange = function() {
+  resetFrom('fuel');
+  if (!this.value) return;
+  const make=document.getElementById('selMake').value, model=document.getElementById('selModel').value, eng=document.getElementById('selEngine').value;
+  const fuels=[...new Set(allCars.filter(c=>c.make===make&&c.model===model&&c.engine_size==eng&&c.transmission===this.value).map(c=>c.fuel_type))].sort();
+  const sel=document.getElementById('selFuel');
+  sel.innerHTML='<option value="">—</option>';
+  fuels.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f+' — '+FUEL_LABELS[f];sel.appendChild(o)});
+  sel.disabled=false;
+};
+document.getElementById('selFuel').onchange = function() {
+  if (!this.value){selectedCar=null;hidePreview();return;}
+  const make=document.getElementById('selMake').value, model=document.getElementById('selModel').value,
+        eng=document.getElementById('selEngine').value, trans=document.getElementById('selTrans').value;
+  const car=allCars.find(c=>c.make===make&&c.model===model&&c.engine_size==eng&&c.transmission===trans&&c.fuel_type===this.value);
+  if (car) showPreview(car);
+};
+
+function resetFrom(level) {
+  selectedCar=null; hidePreview();
+  const ids=['selModel','selEngine','selTrans','selFuel'];
+  const ph=['— SELECT MODEL —','—','—','—'];
+  const start=['model','engine','trans','fuel'].indexOf(level);
+  for(let i=start;i<ids.length;i++){
+    const s=document.getElementById(ids[i]);
+    s.innerHTML=`<option value="">${ph[i]}</option>`;s.disabled=true;
+  }
+}
+
+// ── Search ───────────────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q=this.value.trim().toUpperCase();
+  const list=document.getElementById('resultsList');
+  if (q.length<2){list.classList.remove('show');return;}
+  filteredCars=allCars.filter(c=>c.make.includes(q)||c.model.includes(q)).slice(0,40);
+  if (!filteredCars.length){list.classList.remove('show');return;}
+  list.innerHTML=filteredCars.map((c,i)=>`
+    <div class="result-item" onclick="selectFromSearch(${i})">
+      <div>
+        <div class="result-name">${c.make} ${c.model}</div>
+        <div class="result-meta">${c.engine_size}L · ${c.cylinders}cyl · ${c.transmission} · ${c.vehicle_class}</div>
+      </div>
+      <div style="text-align:right">
+        <span class="fuel-badge fuel-${c.fuel_type}">${c.fuel_type}</span>
+        <div class="result-co2" style="margin-top:4px">${c.co2} g/km</div>
+      </div>
+    </div>`).join('');
+  list.classList.add('show');
+});
+
+function selectFromSearch(i) {
+  const car=filteredCars[i];
+  document.getElementById('selMake').value=car.make;
+  document.getElementById('selMake').dispatchEvent(new Event('change'));
+  setTimeout(()=>{
+    document.getElementById('selModel').value=car.model;
+    document.getElementById('selModel').dispatchEvent(new Event('change'));
+    setTimeout(()=>{
+      document.getElementById('selEngine').value=car.engine_size;
+      document.getElementById('selEngine').dispatchEvent(new Event('change'));
+      setTimeout(()=>{
+        document.getElementById('selTrans').value=car.transmission;
+        document.getElementById('selTrans').dispatchEvent(new Event('change'));
+        setTimeout(()=>{
+          document.getElementById('selFuel').value=car.fuel_type;
+          document.getElementById('selFuel').dispatchEvent(new Event('change'));
+        },50);
+      },50);
+    },50);
+  },50);
+  document.getElementById('resultsList').classList.remove('show');
+  document.getElementById('searchInput').value=car.make+' '+car.model;
+}
+
+// ── Preview ──────────────────────────────────────────────────────────────────
+function showPreview(car) {
+  selectedCar=car;
+  document.getElementById('previewTitle').textContent=car.make+' '+car.model;
+  document.getElementById('previewBadge').textContent=car.vehicle_class;
+  document.getElementById('pEngine').textContent=car.engine_size+'L';
+  document.getElementById('pCyl').textContent=car.cylinders;
+  document.getElementById('pTrans').textContent=car.transmission;
+  document.getElementById('pFuel').innerHTML=`<span class="fuel-badge fuel-${car.fuel_type}">${car.fuel_type} — ${FUEL_LABELS[car.fuel_type]}</span>`;
+  document.getElementById('pFuelComb').textContent=car.fuel_comb+' L/100km';
+  document.getElementById('pClass').textContent=car.vehicle_class_type;
+  document.getElementById('pCO2').textContent=car.co2+' g/km';
+  document.getElementById('pMakeType').textContent=car.make_type;
+  document.getElementById('selectedPreview').classList.add('show');
+  document.getElementById('addBtn').classList.add('ready');
+}
+function hidePreview(){
+  document.getElementById('selectedPreview').classList.remove('show');
+  document.getElementById('addBtn').classList.remove('ready');
+}
+
+// ── Garage ───────────────────────────────────────────────────────────────────
+function addCar() {
+  if (!selectedCar) return;
+  const nick=document.getElementById('carNickname').value.trim()||'';
+  garage.push({...selectedCar, nickname:nick, id:Date.now()});
+  saveGarage(); renderGarage();
+  resetFrom('model');
+  document.getElementById('selMake').value='';
+  document.getElementById('searchInput').value='';
+  document.getElementById('carNickname').value='';
+  selectedCar=null; hidePreview();
+}
+
+function deleteCar(id,e) {
+  e.stopPropagation();
+  if (!confirm('Remove this vehicle from garage?')) return;
+  garage=garage.filter(c=>c.id!==id);
+  saveGarage(); renderGarage();
+}
+
+function openDashboard(car) {
+  sessionStorage.setItem('activeCar', JSON.stringify(car));
+  window.location.href='/';
+}
+
+function saveGarage() { localStorage.setItem('garage',JSON.stringify(garage)); }
+
+function renderGarage() {
+  const grid=document.getElementById('garageGrid');
+  document.getElementById('carCount').textContent=garage.length+' CAR'+(garage.length!==1?'S':'');
+  if (!garage.length) {
+    grid.innerHTML='<div class="empty-garage"><p>NO VEHICLES CONFIGURED YET</p><p>ADD A CAR BELOW TO GET STARTED</p></div>';
+    return;
+  }
+  grid.innerHTML=garage.map(car=>`
+    <div class="car-card" onclick="openDashboard(${JSON.stringify(car).replace(/"/g,'&quot;')})">
+      <button class="delete-btn" onclick="deleteCar(${car.id},event)">✕</button>
+      <div class="car-make">${car.make}</div>
+      <div class="car-model">${car.nickname||car.model}</div>
+      <div class="car-specs">
+        <div class="spec"><div class="spec-label">ENGINE</div><div class="spec-val">${car.engine_size}L · ${car.cylinders}cyl</div></div>
+        <div class="spec"><div class="spec-label">TRANSMISSION</div><div class="spec-val">${car.transmission}</div></div>
+        <div class="spec"><div class="spec-label">FUEL</div><div class="spec-val"><span class="fuel-badge fuel-${car.fuel_type}">${car.fuel_type}</span></div></div>
+        <div class="spec"><div class="spec-label">CLASS</div><div class="spec-val">${car.vehicle_class_type}</div></div>
+      </div>
+      <div class="car-co2">
+        <span class="co2-label">DATASET CO2</span>
+        <span class="co2-val">${car.co2} G/KM</span>
+      </div>
+    </div>`).join('');
+}
+
+loadDataset();
+</script>
+</body>
+</html>
