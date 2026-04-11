@@ -15,6 +15,7 @@ app = Flask(__name__, static_folder='public', static_url_path='')
 
 def make_car_state():
     return {
+        "last_seen": None,
         "gps_log":   [],
         "obd2_data": {"error": "waiting_for_data"},
         "trip": {
@@ -236,15 +237,22 @@ def garage_page():
 def cars_dataset():
     return send_from_directory('public', 'cars_dataset.json')
 
-# List all known car_ids (for the garage page to discover paired devices)
 @app.route("/devices", methods=["GET"])
 def list_devices():
-    return jsonify(list(cars.keys()))
-
+    TIMEOUT_S = 60
+    now = now_utc()
+    active = []
+    for car_id, state in cars.items():
+        ls = state.get("last_seen")
+        if ls and (now - datetime.fromisoformat(ls)).total_seconds() <= TIMEOUT_S:
+            active.append(car_id)
+    return jsonify(active)
+    
 @app.route("/gps", methods=["GET","POST"])
 def gps_handler():
     car_id = car_id_from_request(request)
     state  = get_car(car_id)
+    state["last_seen"] = now_utc().isoformat()
 
     if request.method == "GET":
         check_trip_end(state, car_id)
@@ -286,6 +294,7 @@ def gps_handler():
 def obd2_handler():
     car_id = car_id_from_request(request)
     state  = get_car(car_id)
+    state["last_seen"] = now_utc().isoformat()
 
     if request.method == "GET":
         result = dict(state["obd2_data"])
