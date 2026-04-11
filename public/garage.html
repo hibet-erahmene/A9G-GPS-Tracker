@@ -189,6 +189,17 @@ body{
 .fuel-E{background:rgba(74,158,255,.1);color:#4a9eff;border:1px solid rgba(74,158,255,.2)}
 .fuel-N{background:rgba(255,82,82,.1);color:#ff5252;border:1px solid rgba(255,82,82,.2)}
 
+/* ── Discovered devices panel ── */
+.devices-panel{margin-bottom:20px}
+.device-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:#1a1a2e;border:1px solid #3a3a5a;
+  border-radius:4px;padding:6px 12px;margin:4px;
+  font-family:'Share Tech Mono',monospace;font-size:.65rem;
+  color:#8a8aaa;cursor:default;
+}
+.device-chip .dot{width:6px;height:6px;border-radius:50%;background:#00e676;flex-shrink:0}
+
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:#2a2a4a;border-radius:3px}
 ::-webkit-scrollbar-thumb{background:#4a9eff;border-radius:3px}
@@ -208,6 +219,12 @@ body{
   <div class="header">
     <h1>MY GARAGE</h1>
     <p>SELECT A VEHICLE TO OPEN ITS DASHBOARD</p>
+  </div>
+
+  <!-- Active devices discovered from server -->
+  <div class="card devices-panel" id="devicesCard" style="display:none">
+    <h3>[ ACTIVE DEVICES ] <span id="devicesCount">0 ONLINE</span></h3>
+    <div id="devicesContainer"></div>
   </div>
 
   <!-- Saved cars -->
@@ -287,10 +304,11 @@ body{
 
 <script>
 let allCars = [], filteredCars = [], selectedCar = null;
-let garage = JSON.parse(localStorage.getItem('garage')||'[]');
+let garage = JSON.parse(localStorage.getItem('garage') || '[]');
 
 const FUEL_LABELS = {X:'Regular',Z:'Premium',D:'Diesel',E:'Ethanol',N:'Natural Gas'};
 
+// ── Load dataset ─────────────────────────────────────────────────────────────
 async function loadDataset() {
   try {
     const r = await fetch('/cars_dataset.json');
@@ -300,12 +318,28 @@ async function loadDataset() {
   } catch(e) { console.error('Could not load cars_dataset.json', e); }
 }
 
+// ── Poll server for active device IDs ────────────────────────────────────────
+async function pollDevices() {
+  try {
+    const r    = await fetch('/devices');
+    const devs = await r.json();
+    const card = document.getElementById('devicesCard');
+    const cont = document.getElementById('devicesContainer');
+    if (devs.length === 0) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    document.getElementById('devicesCount').textContent = devs.length + ' ONLINE';
+    cont.innerHTML = devs.map(d =>
+      `<div class="device-chip"><span class="dot"></span>${d}</div>`
+    ).join('');
+  } catch(e) { /* server unreachable, ignore */ }
+}
+
 function populateMakes() {
   const makes = [...new Set(allCars.map(c=>c.make))].sort();
   const sel   = document.getElementById('selMake');
   makes.forEach(m => {
     const o = document.createElement('option');
-    o.value=m; o.textContent=m; sel.appendChild(o);
+    o.value = m; o.textContent = m; sel.appendChild(o);
   });
 }
 
@@ -316,18 +350,18 @@ document.getElementById('selMake').onchange = function() {
   const models = [...new Set(allCars.filter(c=>c.make===this.value).map(c=>c.model))].sort();
   const sel = document.getElementById('selModel');
   sel.innerHTML = '<option value="">— SELECT MODEL —</option>';
-  models.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o)});
-  sel.disabled=false;
+  models.forEach(m => { const o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o); });
+  sel.disabled = false;
 };
 document.getElementById('selModel').onchange = function() {
   resetFrom('engine');
   if (!this.value) return;
-  const make = document.getElementById('selMake').value;
+  const make    = document.getElementById('selMake').value;
   const engines = [...new Set(allCars.filter(c=>c.make===make&&c.model===this.value).map(c=>c.engine_size))].sort((a,b)=>a-b);
-  const sel = document.getElementById('selEngine');
-  sel.innerHTML='<option value="">—</option>';
-  engines.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e+'L';sel.appendChild(o)});
-  sel.disabled=false;
+  const sel     = document.getElementById('selEngine');
+  sel.innerHTML = '<option value="">—</option>';
+  engines.forEach(e => { const o=document.createElement('option'); o.value=e; o.textContent=e+'L'; sel.appendChild(o); });
+  sel.disabled = false;
 };
 document.getElementById('selEngine').onchange = function() {
   resetFrom('trans');
@@ -336,7 +370,7 @@ document.getElementById('selEngine').onchange = function() {
   const trans=[...new Set(allCars.filter(c=>c.make===make&&c.model===model&&c.engine_size==this.value).map(c=>c.transmission))].sort();
   const sel=document.getElementById('selTrans');
   sel.innerHTML='<option value="">—</option>';
-  trans.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;sel.appendChild(o)});
+  trans.forEach(t => { const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
   sel.disabled=false;
 };
 document.getElementById('selTrans').onchange = function() {
@@ -346,11 +380,11 @@ document.getElementById('selTrans').onchange = function() {
   const fuels=[...new Set(allCars.filter(c=>c.make===make&&c.model===model&&c.engine_size==eng&&c.transmission===this.value).map(c=>c.fuel_type))].sort();
   const sel=document.getElementById('selFuel');
   sel.innerHTML='<option value="">—</option>';
-  fuels.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f+' — '+FUEL_LABELS[f];sel.appendChild(o)});
+  fuels.forEach(f => { const o=document.createElement('option'); o.value=f; o.textContent=f+' — '+FUEL_LABELS[f]; sel.appendChild(o); });
   sel.disabled=false;
 };
 document.getElementById('selFuel').onchange = function() {
-  if (!this.value){selectedCar=null;hidePreview();return;}
+  if (!this.value) { selectedCar=null; hidePreview(); return; }
   const make=document.getElementById('selMake').value, model=document.getElementById('selModel').value,
         eng=document.getElementById('selEngine').value, trans=document.getElementById('selTrans').value;
   const car=allCars.find(c=>c.make===make&&c.model===model&&c.engine_size==eng&&c.transmission===trans&&c.fuel_type===this.value);
@@ -364,7 +398,7 @@ function resetFrom(level) {
   const start=['model','engine','trans','fuel'].indexOf(level);
   for(let i=start;i<ids.length;i++){
     const s=document.getElementById(ids[i]);
-    s.innerHTML=`<option value="">${ph[i]}</option>`;s.disabled=true;
+    s.innerHTML=`<option value="">${ph[i]}</option>`; s.disabled=true;
   }
 }
 
@@ -373,7 +407,7 @@ document.getElementById('searchInput').addEventListener('input', function() {
   const q=this.value.trim().toUpperCase();
   const list=document.getElementById('resultsList');
   if (q.length<2){list.classList.remove('show');return;}
-  filteredCars=allCars.filter(c=>c.make.includes(q)||c.model.includes(q)).slice(0,40);
+  filteredCars=allCars.filter(c=>c.make.toUpperCase().includes(q)||c.model.toUpperCase().includes(q)).slice(0,40);
   if (!filteredCars.length){list.classList.remove('show');return;}
   list.innerHTML=filteredCars.map((c,i)=>`
     <div class="result-item" onclick="selectFromSearch(${i})">
@@ -421,7 +455,7 @@ function showPreview(car) {
   document.getElementById('pEngine').textContent=car.engine_size+'L';
   document.getElementById('pCyl').textContent=car.cylinders;
   document.getElementById('pTrans').textContent=car.transmission;
-  document.getElementById('pFuel').innerHTML=`<span class="fuel-badge fuel-${car.fuel_type}">${car.fuel_type} — ${FUEL_LABELS[car.fuel_type]}</span>`;
+  document.getElementById('pFuel').innerHTML=`<span class="fuel-badge fuel-${car.fuel_type}">${car.fuel_type} — ${FUEL_LABELS[car.fuel_type]||car.fuel_type}</span>`;
   document.getElementById('pFuelComb').textContent=car.fuel_comb+' L/100km';
   document.getElementById('pClass').textContent=car.vehicle_class_type;
   document.getElementById('pCO2').textContent=car.co2+' g/km';
@@ -436,7 +470,6 @@ function hidePreview(){
 
 // ── Garage ───────────────────────────────────────────────────────────────────
 function makeDeviceId() {
-  // 4 random hex chars → e.g. "CAR-A3F9"
   return 'CAR-' + Math.floor(Math.random()*0x10000).toString(16).toUpperCase().padStart(4,'0');
 }
 
@@ -460,7 +493,7 @@ function addCar() {
   selectedCar=null; hidePreview();
 }
 
-function deleteCar(id,e) {
+function deleteCar(id, e) {
   e.stopPropagation();
   if (!confirm('Remove this vehicle from garage?')) return;
   garage=garage.filter(c=>c.id!==id);
@@ -469,11 +502,10 @@ function deleteCar(id,e) {
 
 function openDashboard(car) {
   sessionStorage.setItem('activeCar', JSON.stringify(car));
-  // device_id is included in the car object already
   window.location.href='/';
 }
 
-function saveGarage() { localStorage.setItem('garage',JSON.stringify(garage)); }
+function saveGarage() { localStorage.setItem('garage', JSON.stringify(garage)); }
 
 function renderGarage() {
   const grid=document.getElementById('garageGrid');
@@ -506,6 +538,8 @@ function renderGarage() {
 }
 
 loadDataset();
+pollDevices();
+setInterval(pollDevices, 10000);
 </script>
 </body>
 </html>
