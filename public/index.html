@@ -8,11 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background: #ffe8f0;
@@ -21,22 +17,14 @@
             padding: 20px;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1400px; margin: 0 auto; }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        .header { text-align: center; margin-bottom: 30px; }
 
         .header h1 {
             font-family: 'Orbitron', monospace;
-            font-size: 2.2rem;
-            font-weight: 800;
-            letter-spacing: 3px;
-            color: #1a1a2e;
+            font-size: 2.2rem; font-weight: 800;
+            letter-spacing: 3px; color: #1a1a2e;
             text-shadow: 3px 3px 0 #d4a5b8;
             margin-bottom: 5px;
         }
@@ -44,572 +32,450 @@
         .header p {
             color: #4a4a5a;
             font-family: 'Share Tech Mono', monospace;
-            font-size: 0.75rem;
-            letter-spacing: 2px;
+            font-size: 0.75rem; letter-spacing: 2px;
         }
+
+        .garage-link {
+            display: inline-block; margin-top: 8px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem; letter-spacing: 2px;
+            color: #b39ddb; text-decoration: none;
+            border: 1px solid rgba(179,157,219,.3);
+            padding: 3px 12px; border-radius: 3px;
+            transition: all .2s;
+        }
+        .garage-link:hover { background: rgba(179,157,219,.1); color: #d1c4e9; }
 
         .status-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            margin-top: 10px;
-            font-family: 'Share Tech Mono', monospace;
+            display: inline-block; padding: 5px 15px;
+            border-radius: 4px; font-size: 0.7rem; font-weight: 700;
+            margin-top: 10px; font-family: 'Share Tech Mono', monospace;
             letter-spacing: 1px;
         }
-
-        .status-online {
-            background: #1a1a2e;
-            color: #ffe8f0;
-            border-left: 3px solid #4a9eff;
-        }
-
-        .status-offline {
-            background: #2a2a3e;
-            color: #888;
-            border-left: 3px solid #ff4444;
-        }
+        .status-online  { background: #1a1a2e; color: #ffe8f0; border-left: 3px solid #4a9eff; }
+        .status-offline { background: #2a2a3e; color: #888;    border-left: 3px solid #ff4444; }
 
         .button-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
-            flex-wrap: wrap;
+            display: flex; gap: 10px;
+            justify-content: center; margin-top: 15px; flex-wrap: wrap;
         }
 
         .btn {
-            background: #1a1a2e;
-            color: #4a9eff;
+            background: #1a1a2e; color: #4a9eff;
             border: 1px solid #4a9eff;
-            padding: 8px 16px;
-            border-radius: 4px;
+            padding: 8px 16px; border-radius: 4px;
             font-family: 'Share Tech Mono', monospace;
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            cursor: pointer;
+            font-size: 0.7rem; font-weight: 600;
+            letter-spacing: 1px; cursor: pointer;
             transition: all 0.3s ease;
         }
-
-        .btn:hover {
-            background: #4a9eff;
-            color: #1a1a2e;
-            box-shadow: 0 0 10px rgba(74, 158, 255, 0.5);
-        }
-
-        .btn-danger {
-            border-color: #ff4444;
-            color: #ff4444;
-        }
-
-        .btn-danger:hover {
-            background: #ff4444;
-            color: #1a1a2e;
-        }
-
-        .btn-success {
-            border-color: #00ff88;
-            color: #00ff88;
-        }
-
-        .btn-success:hover {
-            background: #00ff88;
-            color: #1a1a2e;
-        }
-
-        .btn-warning {
-            border-color: #ffaa00;
-            color: #ffaa00;
-        }
-
-        .btn-warning:hover {
-            background: #ffaa00;
-            color: #1a1a2e;
-        }
+        .btn:hover         { background: #4a9eff; color: #1a1a2e; box-shadow: 0 0 10px rgba(74,158,255,.5); }
+        .btn-danger        { border-color: #ff4444; color: #ff4444; }
+        .btn-danger:hover  { background: #ff4444; color: #1a1a2e; }
+        .btn-success       { border-color: #00ff88; color: #00ff88; }
+        .btn-success:hover { background: #00ff88; color: #1a1a2e; }
+        .btn-warning       { border-color: #ffaa00; color: #ffaa00; }
+        .btn-warning:hover { background: #ffaa00; color: #1a1a2e; }
 
         .saved-routes {
-            margin-top: 15px;
-            background: #1a1a2e;
-            border-radius: 6px;
-            padding: 12px;
+            margin-top: 15px; background: #1a1a2e;
+            border-radius: 6px; padding: 12px;
             border: 1px solid #2a2a4a;
-            max-height: 200px;
-            overflow-y: auto;
+            max-height: 200px; overflow-y: auto;
         }
-
         .saved-routes h4 {
-            color: #c8c8e8;
-            font-size: 0.7rem;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
+            color: #c8c8e8; font-size: 0.7rem;
+            letter-spacing: 2px; margin-bottom: 10px;
             font-family: 'Share Tech Mono', monospace;
         }
-
         .route-item {
-            background: #0f0f1a;
-            border-radius: 4px;
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            font-size: 0.65rem;
-            font-family: 'Share Tech Mono', monospace;
-            color: #8a8aaa;
-            border-left: 2px solid #4a9eff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: #0f0f1a; border-radius: 4px;
+            padding: 8px 12px; margin-bottom: 8px;
+            font-size: 0.65rem; font-family: 'Share Tech Mono', monospace;
+            color: #8a8aaa; border-left: 2px solid #4a9eff;
+            display: flex; justify-content: space-between; align-items: center;
         }
-
-        .route-name {
-            font-weight: 600;
-            color: #4a9eff;
-        }
-
-        .route-stats {
-            font-size: 0.6rem;
-            color: #6a6a8a;
-        }
-
-        .route-actions {
-            display: flex;
-            gap: 8px;
-        }
-
+        .route-name   { font-weight: 600; color: #4a9eff; }
+        .route-stats  { font-size: 0.6rem; color: #6a6a8a; }
+        .route-actions { display: flex; gap: 8px; }
         .route-btn {
-            background: none;
-            border: none;
-            color: #4a9eff;
-            cursor: pointer;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 3px;
-            transition: all 0.3s ease;
+            background: none; border: none; cursor: pointer;
+            font-size: 0.7rem; padding: 2px 6px;
+            border-radius: 3px; transition: all 0.3s ease;
         }
-
-        .route-btn:hover {
-            background: #2a2a4a;
-        }
-
-        .route-btn-restore {
-            color: #00ff88;
-        }
-
-        .route-btn-delete {
-            color: #ff4444;
-        }
+        .route-btn:hover       { background: #2a2a4a; }
+        .route-btn-restore     { color: #00ff88; }
+        .route-btn-delete      { color: #ff4444; }
 
         .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 20px; margin-bottom: 20px;
         }
 
         .card {
-            background: rgba(26, 26, 46, 0.85);
-            backdrop-filter: blur(8px);
-            border-radius: 8px;
-            padding: 20px;
+            background: rgba(26,26,46,.85); backdrop-filter: blur(8px);
+            border-radius: 8px; padding: 20px;
             border: 1px solid #3a3a5a;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,.2);
             transition: all 0.3s ease;
         }
-
-        .card:hover {
-            border-color: #6a6a8a;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
-        }
-
+        .card:hover { border-color: #6a6a8a; box-shadow: 0 6px 16px rgba(0,0,0,.3); }
         .card h3 {
-            color: #c8c8e8;
-            font-size: 0.85rem;
-            letter-spacing: 2px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #3a3a5a;
-            padding-bottom: 8px;
+            color: #c8c8e8; font-size: 0.85rem;
+            letter-spacing: 2px; margin-bottom: 15px;
+            border-bottom: 1px solid #3a3a5a; padding-bottom: 8px;
             font-weight: 600;
         }
 
-        #map {
-            height: 400px;
-            border-radius: 6px;
-            overflow: hidden;
-            border: 2px solid #3a3a5a;
-        }
+        #map { height: 400px; border-radius: 6px; overflow: hidden; border: 2px solid #3a3a5a; }
 
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
+        .metrics-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
 
         .metric {
-            background: #1a1a2e;
-            border-radius: 6px;
-            padding: 12px;
-            text-align: center;
-            border: 1px solid #2a2a4a;
+            background: #1a1a2e; border-radius: 6px;
+            padding: 12px; text-align: center; border: 1px solid #2a2a4a;
         }
-
         .metric-label {
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #8a8aaa;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem; text-transform: uppercase;
+            letter-spacing: 2px; color: #8a8aaa; font-weight: 600;
+            margin-bottom: 8px; font-family: 'Share Tech Mono', monospace;
         }
-
         .metric-value {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #4a9eff;
-            font-family: 'Orbitron', monospace;
-            letter-spacing: 2px;
+            font-size: 1.6rem; font-weight: 800; color: #4a9eff;
+            font-family: 'Orbitron', monospace; letter-spacing: 2px;
         }
-
-        .metric-unit {
-            font-size: 0.6rem;
-            color: #6a6a8a;
-            margin-left: 3px;
-            font-weight: 400;
-        }
-
-        .metric-bar {
-            width: 100%;
-            height: 3px;
-            background: #2a2a4a;
-            border-radius: 2px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-
+        .metric-unit { font-size: 0.6rem; color: #6a6a8a; margin-left: 3px; font-weight: 400; }
+        .metric-bar { width: 100%; height: 3px; background: #2a2a4a; border-radius: 2px; margin-top: 10px; overflow: hidden; }
         .metric-bar-fill {
             height: 100%;
             background: linear-gradient(90deg, #4a9eff, #6a6aff);
-            border-radius: 2px;
-            transition: width 0.5s ease;
-            width: 0%;
+            border-radius: 2px; transition: width 0.5s ease; width: 0%;
         }
 
         .gps-info {
-            margin-top: 15px;
-            background: #1a1a2e;
-            border-radius: 6px;
-            padding: 12px;
-            border: 1px solid #2a2a4a;
+            margin-top: 15px; background: #1a1a2e;
+            border-radius: 6px; padding: 12px; border: 1px solid #2a2a4a;
         }
-
         .gps-info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 1px solid #2a2a4a;
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.7rem;
+            display: flex; justify-content: space-between;
+            padding: 6px 0; border-bottom: 1px solid #2a2a4a;
+            font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
         }
+        .gps-info-row:last-child { border-bottom: none; }
+        .gps-info-label { color: #8a8aaa; letter-spacing: 1px; }
+        .gps-info-value { color: #4a9eff; font-weight: 600; }
 
-        .gps-info-row:last-child {
-            border-bottom: none;
-        }
-
-        .gps-info-label {
-            color: #8a8aaa;
-            letter-spacing: 1px;
-        }
-
-        .gps-info-value {
-            color: #4a9eff;
-            font-weight: 600;
-        }
-
-        .trajectory-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-top: 15px;
-        }
-
+        .trajectory-list { max-height: 300px; overflow-y: auto; margin-top: 15px; }
         .trajectory-item {
-            background: #1a1a2e;
-            border-radius: 4px;
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            font-size: 0.65rem;
-            font-family: 'Share Tech Mono', monospace;
-            color: #8a8aaa;
-            border-left: 2px solid #4a9eff;
+            background: #1a1a2e; border-radius: 4px;
+            padding: 8px 12px; margin-bottom: 8px;
+            font-size: 0.65rem; font-family: 'Share Tech Mono', monospace;
+            color: #8a8aaa; border-left: 2px solid #4a9eff;
         }
 
         .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding: 15px;
-            color: #6a6a8a;
-            font-size: 0.6rem;
+            text-align: center; margin-top: 30px; padding: 15px;
+            color: #6a6a8a; font-size: 0.6rem;
             font-family: 'Share Tech Mono', monospace;
-            letter-spacing: 1px;
-            border-top: 1px solid #3a3a5a;
+            letter-spacing: 1px; border-top: 1px solid #3a3a5a;
         }
 
-        .trajectory-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .trajectory-list::-webkit-scrollbar-track {
-            background: #2a2a4a;
-            border-radius: 3px;
-        }
-
-        .trajectory-list::-webkit-scrollbar-thumb {
-            background: #4a9eff;
-            border-radius: 3px;
-        }
+        .trajectory-list::-webkit-scrollbar { width: 6px; }
+        .trajectory-list::-webkit-scrollbar-track { background: #2a2a4a; border-radius: 3px; }
+        .trajectory-list::-webkit-scrollbar-thumb { background: #4a9eff; border-radius: 3px; }
 
         @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            .header h1 {
-                font-size: 1.4rem;
-            }
-            .metrics-grid {
-                grid-template-columns: 1fr;
-            }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.4rem; }
+            .metrics-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>GPS + OBD2 TRACKER</h1>
-            <p>REAL-TIME TELEMETRY SYSTEM</p>
-            <div class="status-badge" id="statusBadge">[ CONNECTING... ]</div>
-            <div class="button-group">
-                <button class="btn" id="saveRouteBtn">💾 SAVE CURRENT ROUTE</button>
-                <button class="btn btn-danger" id="clearMapBtn">🗑️ CLEAR MAP</button>
-                <button class="btn btn-warning" id="stopAutoRefreshBtn">⏸️ STOP REFRESH</button>
-                <button class="btn btn-success" id="startAutoRefreshBtn">▶️ START REFRESH</button>
-                <button class="btn" id="clearAllRoutesBtn">📁 CLEAR ALL SAVED</button>
-            </div>
+<div class="container">
+    <div class="header">
+        <h1>GPS + OBD2 TRACKER</h1>
+        <p id="carLabel">REAL-TIME TELEMETRY SYSTEM</p>
+        <a class="garage-link" href="/garage">← BACK TO GARAGE</a><br>
+        <div class="status-badge status-offline" id="statusBadge">[ CONNECTING... ]</div>
+        <div class="button-group">
+            <button class="btn"             id="saveRouteBtn">💾 SAVE CURRENT ROUTE</button>
+            <button class="btn btn-danger"  id="clearMapBtn">🗑️ CLEAR MAP</button>
+            <button class="btn btn-warning" id="stopAutoRefreshBtn">⏸️ STOP REFRESH</button>
+            <button class="btn btn-success" id="startAutoRefreshBtn">▶️ START REFRESH</button>
+            <button class="btn"             id="clearAllRoutesBtn">📁 CLEAR ALL SAVED</button>
         </div>
-
-        <div class="dashboard-grid">
-            <div class="card">
-                <h3>[ LOCATION TRACKING ]</h3>
-                <div id="map"></div>
-                <div class="gps-info">
-                    <div class="gps-info-row"><span class="gps-info-label">LATITUDE:</span><span class="gps-info-value" id="latestLat">--</span></div>
-                    <div class="gps-info-row"><span class="gps-info-label">LONGITUDE:</span><span class="gps-info-value" id="latestLng">--</span></div>
-                    <div class="gps-info-row"><span class="gps-info-label">LAST UPDATE:</span><span class="gps-info-value" id="latestTime">--</span></div>
-                    <div class="gps-info-row"><span class="gps-info-label">TOTAL POINTS:</span><span class="gps-info-value" id="totalPoints">0</span></div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>[ ENGINE DATA ]</h3>
-                <div class="metrics-grid">
-                    <div class="metric"><div class="metric-label">RPM</div><div class="metric-value" id="rpm">--</div><div class="metric-bar"><div class="metric-bar-fill" id="rpmBar"></div></div></div>
-                    <div class="metric"><div class="metric-label">SPEED</div><div class="metric-value" id="speed">-- <span class="metric-unit">KM/H</span></div><div class="metric-bar"><div class="metric-bar-fill" id="speedBar"></div></div></div>
-                    <div class="metric"><div class="metric-label">COOLANT</div><div class="metric-value" id="coolant">-- <span class="metric-unit">C</span></div></div>
-                    <div class="metric"><div class="metric-label">ENGINE LOAD</div><div class="metric-value" id="load">-- <span class="metric-unit">%</span></div></div>
-                    <div class="metric"><div class="metric-label">THROTTLE</div><div class="metric-value" id="throttle">-- <span class="metric-unit">%</span></div></div>
-                    <div class="metric"><div class="metric-label">BATTERY</div><div class="metric-value" id="battery">-- <span class="metric-unit">V</span></div></div>
-                    <div class="metric"><div class="metric-label">FUEL LEVEL</div><div class="metric-value" id="fuel">-- <span class="metric-unit">%</span></div></div>
-                    <div class="metric"><div class="metric-label">MAF RATE</div><div class="metric-value" id="maf">-- <span class="metric-unit">G/S</span></div></div>
-                    <div class="metric"><div class="metric-label">FUEL CONS</div><div class="metric-value" id="fuelCons">-- <span class="metric-unit">L/100KM</span></div></div>
-                    <div class="metric"><div class="metric-label">CO2 EMISSION</div><div class="metric-value" id="co2">-- <span class="metric-unit">G/KM</span></div><div class="metric-bar"><div class="metric-bar-fill" id="co2Bar"></div></div></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>[ SAVED ROUTES ]</h3>
-            <div class="saved-routes" id="savedRoutesPanel"><div style="text-align: center; color: #6a6a8a;">NO SAVED ROUTES</div></div>
-        </div>
-
-        <div class="card">
-            <h3>[ JOURNEY LOG ]</h3>
-            <div class="trajectory-list" id="trajectoryList"><div style="text-align: center; color: #6a6a8a;">WAITING FOR DATA...</div></div>
-        </div>
-
-        <div class="footer">TELEMETRY SYSTEM v1.0 | SECURE DATA STREAM | REAL-TIME MONITORING</div>
     </div>
 
-    <script>
-        let map, marker = null, path = [], polyline = null;
-        let savedRoutes = [], routeCounter = 1;
-        let autoRefreshEnabled = true;
-        let gpsInterval, obd2Interval;
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3>[ LOCATION TRACKING ]</h3>
+            <div id="map"></div>
+            <div class="gps-info">
+                <div class="gps-info-row"><span class="gps-info-label">LATITUDE:</span><span class="gps-info-value" id="latestLat">--</span></div>
+                <div class="gps-info-row"><span class="gps-info-label">LONGITUDE:</span><span class="gps-info-value" id="latestLng">--</span></div>
+                <div class="gps-info-row"><span class="gps-info-label">LAST UPDATE:</span><span class="gps-info-value" id="latestTime">--</span></div>
+                <div class="gps-info-row"><span class="gps-info-label">TOTAL POINTS:</span><span class="gps-info-value" id="totalPoints">0</span></div>
+                <div class="gps-info-row"><span class="gps-info-label">DEVICE ID:</span><span class="gps-info-value" id="deviceIdDisplay">--</span></div>
+            </div>
+        </div>
 
-        function loadSavedRoutes() {
-            const stored = localStorage.getItem('savedRoutes');
-            if (stored) { savedRoutes = JSON.parse(stored); routeCounter = savedRoutes.length + 1; updateSavedRoutesPanel(); }
-        }
-        function persistRoutes() { localStorage.setItem('savedRoutes', JSON.stringify(savedRoutes)); }
-        
-        function updateSavedRoutesPanel() {
-            const panel = document.getElementById('savedRoutesPanel');
-            if (!savedRoutes.length) { panel.innerHTML = '<div style="text-align: center; color: #6a6a8a;">NO SAVED ROUTES</div>'; return; }
-            panel.innerHTML = savedRoutes.map((route, idx) => `<div class="route-item"><div><div class="route-name">${route.name}</div><div class="route-stats">${route.points.length} points | ${new Date(route.savedAt).toLocaleString()}</div></div><div class="route-actions"><button class="route-btn route-btn-restore" onclick="restoreRoute(${idx})">RESTORE</button><button class="route-btn route-btn-delete" onclick="deleteRoute(${idx})">DELETE</button></div></div>`).join('');
-        }
+        <div class="card">
+            <h3>[ ENGINE DATA ]</h3>
+            <div class="metrics-grid">
+                <div class="metric"><div class="metric-label">RPM</div><div class="metric-value" id="rpm">--</div><div class="metric-bar"><div class="metric-bar-fill" id="rpmBar"></div></div></div>
+                <div class="metric"><div class="metric-label">SPEED</div><div class="metric-value" id="speed">-- <span class="metric-unit">KM/H</span></div><div class="metric-bar"><div class="metric-bar-fill" id="speedBar"></div></div></div>
+                <div class="metric"><div class="metric-label">COOLANT</div><div class="metric-value" id="coolant">-- <span class="metric-unit">°C</span></div></div>
+                <div class="metric"><div class="metric-label">ENGINE LOAD</div><div class="metric-value" id="load">-- <span class="metric-unit">%</span></div></div>
+                <div class="metric"><div class="metric-label">THROTTLE</div><div class="metric-value" id="throttle">-- <span class="metric-unit">%</span></div></div>
+                <div class="metric"><div class="metric-label">BATTERY</div><div class="metric-value" id="battery">-- <span class="metric-unit">V</span></div></div>
+                <div class="metric"><div class="metric-label">FUEL LEVEL</div><div class="metric-value" id="fuel">-- <span class="metric-unit">%</span></div></div>
+                <div class="metric"><div class="metric-label">MAF RATE</div><div class="metric-value" id="maf">-- <span class="metric-unit">G/S</span></div></div>
+                <div class="metric"><div class="metric-label">FUEL CONS</div><div class="metric-value" id="fuelCons">-- <span class="metric-unit">L/100KM</span></div></div>
+                <div class="metric"><div class="metric-label">CO2 EMISSION</div><div class="metric-value" id="co2">-- <span class="metric-unit">G/KM</span></div><div class="metric-bar"><div class="metric-bar-fill" id="co2Bar"></div></div></div>
+            </div>
+        </div>
+    </div>
 
-        function saveCurrentRoute() {
-            if (!path.length) { alert('No route to save!'); return; }
-            const routeName = `ROUTE_${routeCounter}`;
-            savedRoutes.push({ name: routeName, points: [...path], savedAt: new Date().toISOString() });
-            routeCounter++; persistRoutes(); updateSavedRoutesPanel();
-            alert(`Route "${routeName}" saved with ${path.length} points!`);
-        }
+    <div class="card">
+        <h3>[ SAVED ROUTES ]</h3>
+        <div class="saved-routes" id="savedRoutesPanel"><div style="text-align:center;color:#6a6a8a">NO SAVED ROUTES</div></div>
+    </div>
 
-        function restoreRoute(index) {
-            const route = savedRoutes[index];
-            if (confirm(`Load "${route.name}"?`)) { clearMapOnly(); path = [...route.points]; drawPath(); alert(`Route "${route.name}" loaded!`); }
-        }
+    <div class="card">
+        <h3>[ JOURNEY LOG ]</h3>
+        <div class="trajectory-list" id="trajectoryList"><div style="text-align:center;color:#6a6a8a">WAITING FOR DATA...</div></div>
+    </div>
 
-        function deleteRoute(index) {
-            if (confirm(`Delete "${savedRoutes[index].name}"?`)) { savedRoutes.splice(index, 1); persistRoutes(); updateSavedRoutesPanel(); alert('Route deleted!'); }
-        }
+    <div class="footer">TELEMETRY SYSTEM v1.0 | SECURE DATA STREAM | REAL-TIME MONITORING</div>
+</div>
 
-        function clearMapOnly() {
-            if (polyline) { map.removeLayer(polyline); polyline = null; }
-            if (marker) { map.removeLayer(marker); marker = null; }
-            path = [];
+<script>
+    // ── Read active car from garage ──────────────────────────────────────────
+    const activeCar = JSON.parse(sessionStorage.getItem('activeCar') || '{}');
+    const CAR_ID    = (activeCar.device_id || 'default').trim();
+
+    // Show car info in header
+    document.getElementById('deviceIdDisplay').textContent = CAR_ID;
+    if (activeCar.make) {
+        document.getElementById('carLabel').textContent =
+            `${activeCar.make} ${activeCar.model || ''} — DEVICE: ${CAR_ID}`;
+    } else {
+        document.getElementById('carLabel').textContent = `DEVICE: ${CAR_ID}`;
+    }
+
+    // ── Map & state ──────────────────────────────────────────────────────────
+    let map, marker = null, path = [], polyline = null;
+    let savedRoutes = [], routeCounter = 1;
+    let autoRefreshEnabled = true;
+    let gpsInterval, obd2Interval;
+
+    function loadSavedRoutes() {
+        const stored = localStorage.getItem('savedRoutes_' + CAR_ID);
+        if (stored) {
+            savedRoutes   = JSON.parse(stored);
+            routeCounter  = savedRoutes.length + 1;
+            updateSavedRoutesPanel();
+        }
+    }
+    function persistRoutes() { localStorage.setItem('savedRoutes_' + CAR_ID, JSON.stringify(savedRoutes)); }
+
+    function updateSavedRoutesPanel() {
+        const panel = document.getElementById('savedRoutesPanel');
+        if (!savedRoutes.length) {
+            panel.innerHTML = '<div style="text-align:center;color:#6a6a8a">NO SAVED ROUTES</div>';
+            return;
+        }
+        panel.innerHTML = savedRoutes.map((route, idx) => `
+            <div class="route-item">
+                <div>
+                    <div class="route-name">${route.name}</div>
+                    <div class="route-stats">${route.points.length} points | ${new Date(route.savedAt).toLocaleString()}</div>
+                </div>
+                <div class="route-actions">
+                    <button class="route-btn route-btn-restore" onclick="restoreRoute(${idx})">RESTORE</button>
+                    <button class="route-btn route-btn-delete"  onclick="deleteRoute(${idx})">DELETE</button>
+                </div>
+            </div>`).join('');
+    }
+
+    function saveCurrentRoute() {
+        if (!path.length) { alert('No route to save!'); return; }
+        const name = `ROUTE_${routeCounter}`;
+        savedRoutes.push({ name, points: [...path], savedAt: new Date().toISOString() });
+        routeCounter++;
+        persistRoutes();
+        updateSavedRoutesPanel();
+        alert(`Route "${name}" saved with ${path.length} points!`);
+    }
+
+    function restoreRoute(index) {
+        const route = savedRoutes[index];
+        if (confirm(`Load "${route.name}"?`)) {
+            clearMapOnly();
+            path = [...route.points];
+            drawPath();
+        }
+    }
+
+    function deleteRoute(index) {
+        if (confirm(`Delete "${savedRoutes[index].name}"?`)) {
+            savedRoutes.splice(index, 1);
+            persistRoutes();
+            updateSavedRoutesPanel();
+        }
+    }
+
+    function clearMapOnly() {
+        if (polyline) { map.removeLayer(polyline); polyline = null; }
+        if (marker)   { map.removeLayer(marker);   marker   = null; }
+        path = [];
+        document.getElementById('totalPoints').textContent = '0';
+    }
+
+    async function clearMapAndServer() {
+        if (!confirm('🗑️ CLEAR ALL GPS DATA?\n\nThis will delete all points from the map AND server.')) return;
+        const btn = document.getElementById('clearMapBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '⏳ CLEARING...';
+        btn.disabled = true;
+        try {
+            const response = await fetch('/clear', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'car_id=' + CAR_ID
+            });
+            if (!response.ok) throw new Error('Server clear failed');
+            clearMapOnly();
+            document.getElementById('trajectoryList').innerHTML = '<div style="text-align:center;color:#6a6a8a">WAITING FOR DATA...</div>';
+            document.getElementById('latestLat').textContent  = '--';
+            document.getElementById('latestLng').textContent  = '--';
+            document.getElementById('latestTime').textContent = '--';
             document.getElementById('totalPoints').textContent = '0';
+        } catch (e) {
+            alert('❌ Error clearing data: ' + e.message);
+        } finally {
+            btn.innerHTML = orig;
+            btn.disabled = false;
         }
+    }
 
-        // FIXED: This function now clears server data too
-        async function clearMapAndServer() {
-            if (!confirm('🗑️ CLEAR ALL GPS DATA?\n\nThis will delete all points from the map AND server. New GPS data will start fresh.')) return;
-            
-            const btn = document.getElementById('clearMapBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '⏳ CLEARING...';
-            btn.disabled = true;
-            
-            try {
-                // Call server to delete GPS data
-                const response = await fetch('/clear', { method: 'POST' });
-                if (!response.ok) throw new Error('Server clear failed');
-                
-                // Clear local map
-                clearMapOnly();
-                
-                // Clear UI displays
-                document.getElementById('trajectoryList').innerHTML = '<div style="text-align: center; color: #6a6a8a;">WAITING FOR DATA...</div>';
-                document.getElementById('latestLat').textContent = '--';
-                document.getElementById('latestLng').textContent = '--';
-                document.getElementById('latestTime').textContent = '--';
-                document.getElementById('totalPoints').textContent = '0';
-                
-                alert('✅ Map and server data cleared!');
-            } catch (error) {
-                console.error('Clear error:', error);
-                alert('❌ Error clearing data: ' + error.message);
-            } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+    function drawPath() {
+        if (!path.length) return;
+        const last = path[path.length - 1];
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([last[0], last[1]]).addTo(map);
+        marker.bindPopup(`<b>CURRENT POSITION</b><br>Lat: ${last[0].toFixed(6)}<br>Lng: ${last[1].toFixed(6)}`);
+        if (polyline) map.removeLayer(polyline);
+        polyline = L.polyline(path, { color: '#4a9eff', weight: 3, opacity: 0.8 }).addTo(map);
+        map.setView([last[0], last[1]], 15);
+    }
+
+    function initMap() {
+        map = L.map('map').setView([36.897028, 7.756056], 14);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OSM & CartoDB', subdomains: 'abcd', maxZoom: 19
+        }).addTo(map);
+    }
+
+    // ── GPS fetch — always passes car_id ────────────────────────────────────
+    async function fetchGPS() {
+        if (!autoRefreshEnabled) return;
+        try {
+            const response = await fetch('/gps?car_id=' + CAR_ID);
+            const data     = await response.json();
+            if (data.length > 0) {
+                const latest = data[data.length - 1];
+                document.getElementById('latestLat').textContent   = latest.lat.toFixed(6);
+                document.getElementById('latestLng').textContent   = latest.lng.toFixed(6);
+                document.getElementById('latestTime').textContent  = new Date(latest.time).toLocaleString();
+                document.getElementById('totalPoints').textContent = data.length;
+                path = data.map(p => [p.lat, p.lng]);
+                drawPath();
+                const last10 = data.slice(-10).reverse();
+                document.getElementById('trajectoryList').innerHTML = last10.map(p =>
+                    `<div class="trajectory-item">[${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}]
+                     <span style="float:right">${new Date(p.time).toLocaleTimeString()}</span></div>`
+                ).join('');
             }
-        }
+        } catch (e) { console.error('GPS fetch error:', e); }
+    }
 
-        function drawPath() {
-            if (!path.length) return;
-            const lastPoint = path[path.length - 1];
-            if (marker) map.removeLayer(marker);
-            marker = L.marker([lastPoint[0], lastPoint[1]]).addTo(map);
-            marker.bindPopup('<b>CURRENT POSITION</b><br>Lat: ' + lastPoint[0].toFixed(6) + '<br>Lng: ' + lastPoint[1].toFixed(6));
-            if (polyline) map.removeLayer(polyline);
-            polyline = L.polyline(path, {color: '#4a9eff', weight: 3, opacity: 0.8}).addTo(map);
-            map.setView([lastPoint[0], lastPoint[1]], 15);
-        }
+    // ── OBD2 fetch — always passes car_id ───────────────────────────────────
+    async function fetchOBD2() {
+        if (!autoRefreshEnabled) return;
+        try {
+            const response = await fetch('/obd2?car_id=' + CAR_ID);
+            const data     = await response.json();
 
-        function initMap() {
-            map = L.map('map').setView([36.897028, 7.756056], 14);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OSM & CartoDB', subdomains: 'abcd', maxZoom: 19 }).addTo(map);
-        }
+            if (data.error) {
+                document.getElementById('statusBadge').textContent  = '[ AWAITING DATA ]';
+                document.getElementById('statusBadge').className    = 'status-badge status-offline';
+                return;
+            }
 
-        async function fetchGPS() {
-            if (!autoRefreshEnabled) return;
-            try {
-                const response = await fetch('/gps');
-                const data = await response.json();
-                if (data.length > 0) {
-                    const latest = data[data.length - 1];
-                    document.getElementById('latestLat').textContent = latest.lat.toFixed(6);
-                    document.getElementById('latestLng').textContent = latest.lng.toFixed(6);
-                    document.getElementById('latestTime').textContent = new Date(latest.time).toLocaleString();
-                    document.getElementById('totalPoints').textContent = data.length;
-                    path = data.map(p => [p.lat, p.lng]);
-                    drawPath();
-                    const last10 = data.slice(-10).reverse();
-                    document.getElementById('trajectoryList').innerHTML = last10.map(p => `<div class="trajectory-item">[${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}] <span style="float: right;">${new Date(p.time).toLocaleTimeString()}</span></div>`).join('');
-                }
-            } catch (error) { console.error('GPS fetch error:', error); }
-        }
+            document.getElementById('statusBadge').textContent = '[ ACTIVE ]';
+            document.getElementById('statusBadge').className   = 'status-badge status-online';
 
-        async function fetchOBD2() {
-            if (!autoRefreshEnabled) return;
-            try {
-                const response = await fetch('/obd2');
-                const data = await response.json();
-                if (data.error) {
-                    document.getElementById('statusBadge').textContent = '[ AWAITING DATA ]';
-                    document.getElementById('statusBadge').className = 'status-badge status-offline';
-                    return;
-                }
-                document.getElementById('statusBadge').textContent = '[ ACTIVE ]';
-                document.getElementById('statusBadge').className = 'status-badge status-online';
-                document.getElementById('rpm').textContent = data.rpm || '--';
-                document.getElementById('speed').innerHTML = (data.speed || '--') + ' <span class="metric-unit">KM/H</span>';
-                document.getElementById('coolant').innerHTML = (data.coolant || '--') + ' <span class="metric-unit">C</span>';
-                document.getElementById('load').innerHTML = (data.load || '--') + ' <span class="metric-unit">%</span>';
-                document.getElementById('throttle').innerHTML = (data.throttle || '--') + ' <span class="metric-unit">%</span>';
-                document.getElementById('battery').innerHTML = (data.batt || '--') + ' <span class="metric-unit">V</span>';
-                document.getElementById('fuel').innerHTML = (data.fuel || '--') + ' <span class="metric-unit">%</span>';
-                document.getElementById('maf').innerHTML = (data.maf || '--') + ' <span class="metric-unit">G/S</span>';
-                document.getElementById('fuelCons').innerHTML = (data.fuel_consumption || '--') + ' <span class="metric-unit">L/100KM</span>';
-                document.getElementById('co2').innerHTML = (data.co2_g_per_km || '--') + ' <span class="metric-unit">G/KM</span>';
-                document.getElementById('rpmBar').style.width = Math.min(100, (data.rpm || 0) / 80) + '%';
-                document.getElementById('speedBar').style.width = Math.min(100, (data.speed || 0) / 2) + '%';
-                document.getElementById('co2Bar').style.width = Math.min(100, (data.co2_g_per_km || 0) / 3) + '%';
-            } catch (error) { console.error('OBD2 fetch error:', error); }
-        }
+            const fmt = (v, u) => v !== undefined && v !== null && v !== -1
+                ? `${v}<span class="metric-unit">${u}</span>` : '--';
 
-        function stopAutoRefresh() {
-            autoRefreshEnabled = false;
-            if (gpsInterval) clearInterval(gpsInterval);
-            if (obd2Interval) clearInterval(obd2Interval);
-            document.getElementById('statusBadge').textContent = '[ PAUSED ]';
-            document.getElementById('statusBadge').className = 'status-badge status-offline';
-        }
+            document.getElementById('rpm').innerHTML      = data.rpm > 0 ? data.rpm : '--';
+            document.getElementById('speed').innerHTML    = fmt(data.speed,    ' KM/H');
+            document.getElementById('coolant').innerHTML  = fmt(data.coolant,  ' °C');
+            document.getElementById('load').innerHTML     = fmt(data.load,     ' %');
+            document.getElementById('throttle').innerHTML = fmt(data.throttle, ' %');
+            document.getElementById('battery').innerHTML  = fmt(data.batt,     ' V');
+            document.getElementById('fuel').innerHTML     = fmt(data.fuel,     ' %');
+            document.getElementById('maf').innerHTML      = fmt(data.maf,      ' G/S');
+            document.getElementById('fuelCons').innerHTML = data.fuel_consumption
+                ? `${data.fuel_consumption}<span class="metric-unit"> L/100KM</span>` : '--';
+            document.getElementById('co2').innerHTML      = data.co2_g_per_km
+                ? `${data.co2_g_per_km}<span class="metric-unit"> G/KM</span>` : '--';
 
-        function startAutoRefresh() {
-            if (autoRefreshEnabled) return;
-            autoRefreshEnabled = true;
-            if (gpsInterval) clearInterval(gpsInterval);
-            if (obd2Interval) clearInterval(obd2Interval);
-            gpsInterval = setInterval(fetchGPS, 3000);
-            obd2Interval = setInterval(fetchOBD2, 2000);
-            fetchGPS(); fetchOBD2();
-        }
+            document.getElementById('rpmBar').style.width   = Math.min(100, (data.rpm   || 0) / 80)  + '%';
+            document.getElementById('speedBar').style.width = Math.min(100, (data.speed || 0) / 2)   + '%';
+            document.getElementById('co2Bar').style.width   = Math.min(100, (data.co2_g_per_km || 0) / 3) + '%';
+        } catch (e) { console.error('OBD2 fetch error:', e); }
+    }
 
-        function clearAllRoutes() {
-            if (confirm('Delete ALL saved routes?')) { savedRoutes = []; routeCounter = 1; persistRoutes(); updateSavedRoutesPanel(); alert('All saved routes deleted!'); }
-        }
+    function stopAutoRefresh() {
+        autoRefreshEnabled = false;
+        clearInterval(gpsInterval);
+        clearInterval(obd2Interval);
+        document.getElementById('statusBadge').textContent = '[ PAUSED ]';
+        document.getElementById('statusBadge').className   = 'status-badge status-offline';
+    }
 
-        document.getElementById('saveRouteBtn').addEventListener('click', saveCurrentRoute);
-        document.getElementById('clearMapBtn').addEventListener('click', clearMapAndServer);
-        document.getElementById('stopAutoRefreshBtn').addEventListener('click', stopAutoRefresh);
-        document.getElementById('startAutoRefreshBtn').addEventListener('click', startAutoRefresh);
-        document.getElementById('clearAllRoutesBtn').addEventListener('click', clearAllRoutes);
-
-        initMap();
-        loadSavedRoutes();
-        gpsInterval = setInterval(fetchGPS, 3000);
+    function startAutoRefresh() {
+        if (autoRefreshEnabled) return;
+        autoRefreshEnabled = true;
+        clearInterval(gpsInterval);
+        clearInterval(obd2Interval);
+        gpsInterval  = setInterval(fetchGPS,  3000);
         obd2Interval = setInterval(fetchOBD2, 2000);
-        fetchGPS();
-        fetchOBD2();
-    </script>
+        fetchGPS(); fetchOBD2();
+    }
+
+    function clearAllRoutes() {
+        if (confirm('Delete ALL saved routes?')) {
+            savedRoutes = []; routeCounter = 1;
+            persistRoutes(); updateSavedRoutesPanel();
+        }
+    }
+
+    document.getElementById('saveRouteBtn').addEventListener('click',      saveCurrentRoute);
+    document.getElementById('clearMapBtn').addEventListener('click',       clearMapAndServer);
+    document.getElementById('stopAutoRefreshBtn').addEventListener('click', stopAutoRefresh);
+    document.getElementById('startAutoRefreshBtn').addEventListener('click', startAutoRefresh);
+    document.getElementById('clearAllRoutesBtn').addEventListener('click', clearAllRoutes);
+
+    initMap();
+    loadSavedRoutes();
+    gpsInterval  = setInterval(fetchGPS,  3000);
+    obd2Interval = setInterval(fetchOBD2, 2000);
+    fetchGPS();
+    fetchOBD2();
+</script>
 </body>
 </html>
