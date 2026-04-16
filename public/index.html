@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS + OBD2 TRACKER</title>
+    <title>GPS + OBD2 TRACKER | DEEP TELEMETRY</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -11,7 +11,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: #ffe8f0;
+            background: #0b0e14;
             font-family: 'Orbitron', monospace;
             min-height: 100vh;
             padding: 20px;
@@ -24,27 +24,30 @@
         .header h1 {
             font-family: 'Orbitron', monospace;
             font-size: 2.2rem; font-weight: 800;
-            letter-spacing: 3px; color: #5a3d5c;
-            text-shadow: 2px 2px 0 #f0c0d0;
+            letter-spacing: 3px; 
+            color: #c0e0d4;
+            text-shadow: 0 0 6px #2a6b5e, 0 2px 0 #1a2a24;
             margin-bottom: 5px;
         }
 
         .header p {
-            color: #8a6a8e;
+            color: #8aaeb0;
             font-family: 'Share Tech Mono', monospace;
             font-size: 0.75rem; letter-spacing: 2px;
+            text-shadow: 0 0 2px #1e3a34;
         }
 
         .garage-link {
             display: inline-block; margin-top: 8px;
             font-family: 'Share Tech Mono', monospace;
             font-size: 0.65rem; letter-spacing: 2px;
-            color: #b08fc0; text-decoration: none;
-            border: 1px solid rgba(176,143,192,.4);
+            color: #8fbcb0; text-decoration: none;
+            border: 1px solid #2a5a50;
             padding: 3px 12px; border-radius: 3px;
             transition: all .2s;
+            background: rgba(0,0,0,0.3);
         }
-        .garage-link:hover { background: rgba(176,143,192,.15); color: #c9add8; }
+        .garage-link:hover { background: #1e3a34; color: #d4f5ec; border-color: #5aa090; box-shadow: 0 0 6px #2a6b5e; }
 
         .status-badge {
             display: inline-block; padding: 5px 15px;
@@ -52,8 +55,8 @@
             margin-top: 10px; font-family: 'Share Tech Mono', monospace;
             letter-spacing: 1px;
         }
-        .status-online  { background: #e8d5e8; color: #5a3d5c; border-left: 3px solid #7caf8c; }
-        .status-offline { background: #f0e0e4; color: #b87a7a; border-left: 3px solid #e0a0a0; }
+        .status-online  { background: #10261e; color: #a5e0d0; border-left: 3px solid #3cbc9a; box-shadow: 0 0 5px #2a8a6e; }
+        .status-offline { background: #24181c; color: #e0a0a8; border-left: 3px solid #bc6a6a; text-shadow: 0 0 2px #5a2a2a; }
 
         .button-group {
             display: flex; gap: 10px;
@@ -61,51 +64,55 @@
         }
 
         .btn {
-            background: #e8d5e8; color: #6a4a6e;
-            border: 1px solid #c8a8d0;
+            background: #161c22; color: #c4e2d8;
+            border: 1px solid #2a6b5e;
             padding: 8px 16px; border-radius: 4px;
             font-family: 'Share Tech Mono', monospace;
             font-size: 0.7rem; font-weight: 600;
             letter-spacing: 1px; cursor: pointer;
             transition: all 0.3s ease;
+            backdrop-filter: blur(2px);
         }
-        .btn:hover         { background: #d4c0d8; color: #4a2a4e; box-shadow: 0 0 10px rgba(106,74,110,.3); }
-        .btn-danger        { border-color: #e0a0a0; color: #b87070; }
-        .btn-danger:hover  { background: #e8c8c8; color: #8a5050; }
-        .btn-success       { border-color: #a8d0a8; color: #5a8a5a; }
-        .btn-success:hover { background: #d0e8d0; color: #3a6a3a; }
-        .btn-warning       { border-color: #e0d0a0; color: #b89a40; }
-        .btn-warning:hover { background: #e8e0c0; color: #8a7030; }
+        .btn:hover         { background: #1f2e30; color: #f0fff0; border-color: #5abfaa; box-shadow: 0 0 10px #2a8a70; }
+        .btn-danger        { border-color: #a05a5a; color: #e0b0b0; }
+        .btn-danger:hover  { background: #2a1a1a; color: #ffc0c0; border-color: #e07a7a; box-shadow: 0 0 8px #a04a4a; }
+        .btn-success       { border-color: #5a9a7a; color: #b4e0c4; }
+        .btn-success:hover { background: #1a2e24; color: #d4ffe4; border-color: #7ad0aa; box-shadow: 0 0 8px #4a9a74; }
+        .btn-warning       { border-color: #b0884a; color: #e8d0a0; }
+        .btn-warning:hover { background: #2a241a; color: #ffe8b0; border-color: #e0b060; box-shadow: 0 0 8px #b07030; }
 
         .saved-routes {
-            margin-top: 15px; background: #f0e8f0;
+            margin-top: 15px; background: #0e141a;
             border-radius: 6px; padding: 12px;
-            border: 1px solid #d8c8e0;
+            border: 1px solid #2a5a50;
             max-height: 200px; overflow-y: auto;
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
         }
         .saved-routes h4 {
-            color: #6a4a6e; font-size: 0.7rem;
+            color: #9acfc0; font-size: 0.7rem;
             letter-spacing: 2px; margin-bottom: 10px;
             font-family: 'Share Tech Mono', monospace;
         }
         .route-item {
-            background: #faf5fa; border-radius: 4px;
+            background: #121a20; border-radius: 4px;
             padding: 8px 12px; margin-bottom: 8px;
             font-size: 0.65rem; font-family: 'Share Tech Mono', monospace;
-            color: #8a6a8e; border-left: 2px solid #9caf8c;
+            color: #b8d4cc; border-left: 2px solid #4aae92;
             display: flex; justify-content: space-between; align-items: center;
+            transition: all 0.2s;
         }
-        .route-name   { font-weight: 600; color: #6a8a5a; }
-        .route-stats  { font-size: 0.6rem; color: #a08aa4; }
+        .route-item:hover { background: #1a242c; border-left-color: #7ae0c0; }
+        .route-name   { font-weight: 600; color: #c8f0e4; text-shadow: 0 0 2px #2a6b5e; }
+        .route-stats  { font-size: 0.6rem; color: #80aa9c; }
         .route-actions { display: flex; gap: 8px; }
         .route-btn {
             background: none; border: none; cursor: pointer;
             font-size: 0.7rem; padding: 2px 6px;
             border-radius: 3px; transition: all 0.3s ease;
         }
-        .route-btn:hover       { background: #e8dce8; }
-        .route-btn-restore     { color: #6a9a6a; }
-        .route-btn-delete      { color: #c08a8a; }
+        .route-btn:hover       { background: #1e2a2c; color: #e0fff0; }
+        .route-btn-restore     { color: #7ac8a8; }
+        .route-btn-delete      { color: #e09a9a; }
 
         .dashboard-grid {
             display: grid; grid-template-columns: 1fr 1fr;
@@ -113,76 +120,83 @@
         }
 
         .card {
-            background: rgba(240,232,240,0.9); backdrop-filter: blur(8px);
+            background: rgba(12, 18, 22, 0.88); backdrop-filter: blur(8px);
             border-radius: 8px; padding: 20px;
-            border: 1px solid #d8c8e0;
-            box-shadow: 0 4px 12px rgba(0,0,0,.05);
+            border: 1px solid #2a6b5e;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
             transition: all 0.3s ease;
         }
-        .card:hover { border-color: #c0a8c8; box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+        .card:hover { border-color: #5abfaa; box-shadow: 0 0 12px rgba(58, 150, 130, 0.3); }
         .card h3 {
-            color: #6a4a6e; font-size: 0.85rem;
+            color: #b2e0d0; font-size: 0.85rem;
             letter-spacing: 2px; margin-bottom: 15px;
-            border-bottom: 1px solid #d8c8e0; padding-bottom: 8px;
+            border-bottom: 1px solid #2a6b5e; padding-bottom: 8px;
             font-weight: 600;
+            text-shadow: 0 0 3px #1a5a4a;
         }
 
-        #map { height: 400px; border-radius: 6px; overflow: hidden; border: 2px solid #d0c0d8; }
+        #map { height: 400px; border-radius: 6px; overflow: hidden; border: 2px solid #2a6b5e; box-shadow: 0 0 10px rgba(42,107,94,0.4); }
 
         .metrics-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
 
         .metric {
-            background: #faf5fa; border-radius: 6px;
-            padding: 12px; text-align: center; border: 1px solid #e0d0e8;
+            background: #0e141c; border-radius: 6px;
+            padding: 12px; text-align: center; border: 1px solid #2a5a4e;
+            transition: all 0.2s;
         }
+        .metric:hover { border-color: #5abfaa; background: #111a20; }
         .metric-label {
             font-size: 0.6rem; text-transform: uppercase;
-            letter-spacing: 2px; color: #9a7a9e; font-weight: 600;
+            letter-spacing: 2px; color: #9ac0b4; font-weight: 600;
             margin-bottom: 8px; font-family: 'Share Tech Mono', monospace;
         }
         .metric-value {
-            font-size: 1.6rem; font-weight: 800; color: #6a8a5a;
+            font-size: 1.6rem; font-weight: 800; color: #c8f0e4;
             font-family: 'Orbitron', monospace; letter-spacing: 2px;
+            text-shadow: 0 0 4px #1a6a58;
         }
-        .metric-unit { font-size: 0.6rem; color: #b09ab4; margin-left: 3px; font-weight: 400; }
-        .metric-bar { width: 100%; height: 3px; background: #e0d0e8; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+        .metric-unit { font-size: 0.6rem; color: #80aa9c; margin-left: 3px; font-weight: 400; }
+        .metric-bar { width: 100%; height: 3px; background: #1e2e2a; border-radius: 2px; margin-top: 10px; overflow: hidden; }
         .metric-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #9caf8c, #7c9f6c);
+            background: linear-gradient(90deg, #4aae92, #7ad8bc);
             border-radius: 2px; transition: width 0.5s ease; width: 0%;
+            box-shadow: 0 0 4px #5abfaa;
         }
 
         .gps-info {
-            margin-top: 15px; background: #faf5fa;
-            border-radius: 6px; padding: 12px; border: 1px solid #e0d0e8;
+            margin-top: 15px; background: #0e141c;
+            border-radius: 6px; padding: 12px; border: 1px solid #2a5a4e;
         }
         .gps-info-row {
             display: flex; justify-content: space-between;
-            padding: 6px 0; border-bottom: 1px solid #e8dce8;
+            padding: 6px 0; border-bottom: 1px solid #1e2e2a;
             font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
         }
         .gps-info-row:last-child { border-bottom: none; }
-        .gps-info-label { color: #a08aa4; letter-spacing: 1px; }
-        .gps-info-value { color: #6a8a5a; font-weight: 600; }
+        .gps-info-label { color: #90b8ac; letter-spacing: 1px; }
+        .gps-info-value { color: #d4f5ec; font-weight: 600; text-shadow: 0 0 2px #2a6b5e; }
 
         .trajectory-list { max-height: 300px; overflow-y: auto; margin-top: 15px; }
         .trajectory-item {
-            background: #faf5fa; border-radius: 4px;
+            background: #0e141a; border-radius: 4px;
             padding: 8px 12px; margin-bottom: 8px;
             font-size: 0.65rem; font-family: 'Share Tech Mono', monospace;
-            color: #8a6a8e; border-left: 2px solid #9caf8c;
+            color: #c4e0d4; border-left: 2px solid #4aae92;
+            transition: all 0.2s;
         }
+        .trajectory-item:hover { background: #141e24; border-left-color: #7ae0c0; }
 
         .footer {
             text-align: center; margin-top: 30px; padding: 15px;
-            color: #b09ab4; font-size: 0.6rem;
+            color: #6a9a8a; font-size: 0.6rem;
             font-family: 'Share Tech Mono', monospace;
-            letter-spacing: 1px; border-top: 1px solid #e0d0e8;
+            letter-spacing: 1px; border-top: 1px solid #2a5a50;
         }
 
         .trajectory-list::-webkit-scrollbar { width: 6px; }
-        .trajectory-list::-webkit-scrollbar-track { background: #e8dce8; border-radius: 3px; }
-        .trajectory-list::-webkit-scrollbar-thumb { background: #c0a8c8; border-radius: 3px; }
+        .trajectory-list::-webkit-scrollbar-track { background: #1a2428; border-radius: 3px; }
+        .trajectory-list::-webkit-scrollbar-thumb { background: #4a8a78; border-radius: 3px; }
 
         @media (max-width: 768px) {
             .dashboard-grid { grid-template-columns: 1fr; }
@@ -239,15 +253,15 @@
 
     <div class="card">
         <h3>[ SAVED ROUTES ]</h3>
-        <div class="saved-routes" id="savedRoutesPanel"><div style="text-align:center;color:#b09ab4">NO SAVED ROUTES</div></div>
+        <div class="saved-routes" id="savedRoutesPanel"><div style="text-align:center;color:#80aa9c">NO SAVED ROUTES</div></div>
     </div>
 
     <div class="card">
         <h3>[ JOURNEY LOG ]</h3>
-        <div class="trajectory-list" id="trajectoryList"><div style="text-align:center;color:#b09ab4">WAITING FOR DATA...</div></div>
+        <div class="trajectory-list" id="trajectoryList"><div style="text-align:center;color:#80aa9c">WAITING FOR DATA...</div></div>
     </div>
 
-    <div class="footer">TELEMETRY SYSTEM v1.0 | SECURE DATA STREAM | REAL-TIME MONITORING</div>
+    <div class="footer">⚡ TELEMETRY SYSTEM v1.0 | DEEP SECURE STREAM | REAL-TIME MONITORING ⚡</div>
 </div>
 
 <script>
@@ -283,14 +297,14 @@
     function updateSavedRoutesPanel() {
         const panel = document.getElementById('savedRoutesPanel');
         if (!savedRoutes.length) {
-            panel.innerHTML = '<div style="text-align:center;color:#b09ab4">NO SAVED ROUTES</div>';
+            panel.innerHTML = '<div style="text-align:center;color:#80aa9c">🔹 NO SAVED ROUTES 🔹</div>';
             return;
         }
         panel.innerHTML = savedRoutes.map((route, idx) => `
             <div class="route-item">
                 <div>
-                    <div class="route-name">${route.name}</div>
-                    <div class="route-stats">${route.points.length} points | ${new Date(route.savedAt).toLocaleString()}</div>
+                    <div class="route-name">📌 ${route.name}</div>
+                    <div class="route-stats">📍 ${route.points.length} points | 🕒 ${new Date(route.savedAt).toLocaleString()}</div>
                 </div>
                 <div class="route-actions">
                     <button class="route-btn route-btn-restore" onclick="restoreRoute(${idx})">RESTORE</button>
@@ -300,18 +314,18 @@
     }
 
     function saveCurrentRoute() {
-        if (!path.length) { alert('No route to save!'); return; }
+        if (!path.length) { alert('⚠️ No route to save!'); return; }
         const name = `ROUTE_${routeCounter}`;
         savedRoutes.push({ name, points: [...path], savedAt: new Date().toISOString() });
         routeCounter++;
         persistRoutes();
         updateSavedRoutesPanel();
-        alert(`Route "${name}" saved with ${path.length} points!`);
+        alert(`✅ Route "${name}" saved with ${path.length} points!`);
     }
 
     function restoreRoute(index) {
         const route = savedRoutes[index];
-        if (confirm(`Load "${route.name}"?`)) {
+        if (confirm(`🔄 Load "${route.name}"?`)) {
             clearMapOnly();
             path = [...route.points];
             drawPath();
@@ -319,7 +333,7 @@
     }
 
     function deleteRoute(index) {
-        if (confirm(`Delete "${savedRoutes[index].name}"?`)) {
+        if (confirm(`🗑️ Delete "${savedRoutes[index].name}"?`)) {
             savedRoutes.splice(index, 1);
             persistRoutes();
             updateSavedRoutesPanel();
@@ -334,7 +348,7 @@
     }
 
     async function clearMapAndServer() {
-        if (!confirm('🗑️ CLEAR ALL GPS DATA?\n\nThis will delete all points from the map AND server.')) return;
+        if (!confirm('⚠️ CLEAR ALL GPS DATA?\n\nThis will delete all points from the map AND server.')) return;
         const btn = document.getElementById('clearMapBtn');
         const orig = btn.innerHTML;
         btn.innerHTML = '⏳ CLEARING...';
@@ -347,7 +361,7 @@
             });
             if (!response.ok) throw new Error('Server clear failed');
             clearMapOnly();
-            document.getElementById('trajectoryList').innerHTML = '<div style="text-align:center;color:#b09ab4">WAITING FOR DATA...</div>';
+            document.getElementById('trajectoryList').innerHTML = '<div style="text-align:center;color:#80aa9c">🌀 WAITING FOR DATA...</div>';
             document.getElementById('latestLat').textContent  = '--';
             document.getElementById('latestLng').textContent  = '--';
             document.getElementById('latestTime').textContent = '--';
@@ -365,16 +379,18 @@
         const last = path[path.length - 1];
         if (marker) map.removeLayer(marker);
         marker = L.marker([last[0], last[1]]).addTo(map);
-        marker.bindPopup(`<b>CURRENT POSITION</b><br>Lat: ${last[0].toFixed(6)}<br>Lng: ${last[1].toFixed(6)}`);
+        marker.bindPopup(`<b style="color:#a5e0d0;">📍 CURRENT POSITION</b><br>Lat: ${last[0].toFixed(6)}<br>Lng: ${last[1].toFixed(6)}`);
         if (polyline) map.removeLayer(polyline);
-        polyline = L.polyline(path, { color: '#9caf8c', weight: 3, opacity: 0.8 }).addTo(map);
+        polyline = L.polyline(path, { color: '#5abfaa', weight: 4, opacity: 0.9, lineJoin: 'round' }).addTo(map);
         map.setView([last[0], last[1]], 15);
     }
 
     function initMap() {
         map = L.map('map').setView([36.897028, 7.756056], 14);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OSM & CartoDB', subdomains: 'abcd', maxZoom: 19
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OSM & CartoDB | Deep Mode',
+            subdomains: 'abcd',
+            maxZoom: 19
         }).addTo(map);
     }
 
@@ -394,8 +410,8 @@
                 drawPath();
                 const last10 = data.slice(-10).reverse();
                 document.getElementById('trajectoryList').innerHTML = last10.map(p =>
-                    `<div class="trajectory-item">[${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}]
-                     <span style="float:right">${new Date(p.time).toLocaleTimeString()}</span></div>`
+                    `<div class="trajectory-item">🌍 [${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}]
+                     <span style="float:right">⏱️ ${new Date(p.time).toLocaleTimeString()}</span></div>`
                 ).join('');
             }
         } catch (e) { console.error('GPS fetch error:', e); }
@@ -414,7 +430,7 @@
                 return;
             }
 
-            document.getElementById('statusBadge').textContent = '[ ACTIVE ]';
+            document.getElementById('statusBadge').textContent = '[ 🔴 ACTIVE ]';
             document.getElementById('statusBadge').className   = 'status-badge status-online';
 
             const fmt = (v, u) => v !== undefined && v !== null && v !== -1
@@ -433,9 +449,12 @@
             document.getElementById('co2').innerHTML      = data.co2_g_per_km
                 ? `${data.co2_g_per_km}<span class="metric-unit"> G/KM</span>` : '--';
 
-            document.getElementById('rpmBar').style.width   = Math.min(100, (data.rpm   || 0) / 80)  + '%';
-            document.getElementById('speedBar').style.width = Math.min(100, (data.speed || 0) / 2)   + '%';
-            document.getElementById('co2Bar').style.width   = Math.min(100, (data.co2_g_per_km || 0) / 3) + '%';
+            let rpmPercent = Math.min(100, (data.rpm   || 0) / 80);
+            let speedPercent = Math.min(100, (data.speed || 0) / 2);
+            let co2Percent = Math.min(100, (data.co2_g_per_km || 0) / 3);
+            document.getElementById('rpmBar').style.width   = rpmPercent + '%';
+            document.getElementById('speedBar').style.width = speedPercent + '%';
+            document.getElementById('co2Bar').style.width   = co2Percent + '%';
         } catch (e) { console.error('OBD2 fetch error:', e); }
     }
 
@@ -443,7 +462,7 @@
         autoRefreshEnabled = false;
         clearInterval(gpsInterval);
         clearInterval(obd2Interval);
-        document.getElementById('statusBadge').textContent = '[ PAUSED ]';
+        document.getElementById('statusBadge').textContent = '[ ⏸ PAUSED ]';
         document.getElementById('statusBadge').className   = 'status-badge status-offline';
     }
 
@@ -458,7 +477,7 @@
     }
 
     function clearAllRoutes() {
-        if (confirm('Delete ALL saved routes?')) {
+        if (confirm('⚠️ Delete ALL saved routes permanently?')) {
             savedRoutes = []; routeCounter = 1;
             persistRoutes(); updateSavedRoutesPanel();
         }
