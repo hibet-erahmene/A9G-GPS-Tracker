@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FLEET COMMAND — Vehicle Management</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>FLEET COMMAND — Live Vehicle Management</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -121,7 +121,7 @@ body{
 }
 .conn-badge .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .conn-online{background:rgba(106,154,106,.1);color:#6a9a6a;border:1px solid rgba(106,154,106,.25)}
-.conn-online .dot{background:#6a9a6a}
+.conn-online .dot{background:#6a9a6a;box-shadow:0 0 4px #6a9a6a}
 .conn-offline{background:rgba(192,138,138,.1);color:#c08a8a;border:1px solid rgba(192,138,138,.2)}
 .conn-offline .dot{background:#c08a8a;opacity:.6}
 
@@ -159,7 +159,7 @@ body{
 }
 .empty-garage p{font-size:.7rem;letter-spacing:2px;margin-top:8px}
 
-/* ── Add car panel ── */
+/* ── Add car panel (simplified but robust) ── */
 .search-row{position:relative;margin-bottom:20px}
 .search-input{
   width:100%;background:#faf5fa;border:1px solid #d8c8e0;border-radius:6px;
@@ -167,7 +167,6 @@ body{
   font-size:.8rem;color:#5a3d5c;outline:none;transition:border-color .2s;
 }
 .search-input:focus{border-color:#9caf8c}
-.search-input::placeholder{color:#b09ab4}
 .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#b09ab4;font-size:.9rem}
 
 .selects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px}
@@ -194,7 +193,6 @@ body{
   cursor:pointer;transition:background .15s;
   display:flex;justify-content:space-between;align-items:center;
 }
-.result-item:last-child{border-bottom:none}
 .result-item:hover{background:#f0e8f0}
 .result-name{font-size:.8rem;color:#5a3d5c;font-family:'Share Tech Mono',monospace}
 .result-meta{font-size:.65rem;color:#a08aa4;margin-top:2px;font-family:'Share Tech Mono',monospace}
@@ -228,7 +226,6 @@ body{
 .add-btn.ready{opacity:1;pointer-events:all}
 .add-btn.ready:hover{background:#9caf8c;transform:translateY(-1px)}
 
-/* fuel badges */
 .fuel-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:.55rem;letter-spacing:1px;font-family:'Share Tech Mono',monospace}
 .fuel-X{background:rgba(106,154,106,.1);color:#6a9a6a;border:1px solid rgba(106,154,106,.2)}
 .fuel-Z{background:rgba(176,143,192,.1);color:#b08fc0;border:1px solid rgba(176,143,192,.2)}
@@ -240,7 +237,6 @@ body{
 ::-webkit-scrollbar-track{background:#e8dce8;border-radius:3px}
 ::-webkit-scrollbar-thumb{background:#c0a8c8;border-radius:3px}
 
-/* Leaflet light override */
 .leaflet-popup-content-wrapper{background:#faf5fa;color:#5a3d5c;border:1px solid #d8c8e0;box-shadow:none}
 .leaflet-popup-tip{background:#faf5fa}
 .leaflet-popup-content{font-family:'Share Tech Mono',monospace;font-size:.65rem;line-height:1.6}
@@ -251,7 +247,6 @@ body{
   .bottom-row{flex-direction:column}
   .add-btn{width:100%}
   .header h1{font-size:1.4rem}
-  .fleet-summary{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
@@ -260,10 +255,9 @@ body{
 
   <div class="header">
     <h1>FLEET COMMAND</h1>
-    <p>MULTI-VEHICLE MONITORING &amp; MANAGEMENT SYSTEM</p>
+    <p>REAL CONNECTIVITY · ONLY ONLINE WHEN DATA ARRIVES</p>
   </div>
 
-  <!-- Fleet summary strip -->
   <div class="fleet-summary" id="fleetSummary">
     <div class="summary-tile"><div class="st-val" id="sumTotal">0</div><div class="st-label">TOTAL UNITS</div></div>
     <div class="summary-tile online"><div class="st-val" id="sumOnline">0</div><div class="st-label">CONNECTED</div></div>
@@ -271,301 +265,278 @@ body{
     <div class="summary-tile"><div class="st-val" id="sumPct">—</div><div class="st-label">FLEET ONLINE %</div></div>
   </div>
 
-  <!-- Live fleet map -->
   <div class="card">
-    <h3>[ LIVE FLEET MAP ] <span id="mapStatus">LOADING...</span></h3>
+    <h3>[ LIVE FLEET MAP ] <span id="mapStatus">AWAITING DATA</span></h3>
     <div id="fleetMap"></div>
     <div class="map-legend">
-      <div class="legend-item"><span class="legend-dot" style="background:#6a9a6a"></span>CONNECTED — LAST GPS KNOWN</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#c08a8a;opacity:.7"></span>OFFLINE — LAST KNOWN POSITION</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#b09ab4"></span>OFFLINE — NO GPS DATA</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#6a9a6a"></span>ONLINE · DATA RECEIVED (last 60s)</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#c08a8a;opacity:.7"></span>OFFLINE · NO RECENT DATA</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#b09ab4"></span>OFFLINE · NO GPS HISTORY</div>
     </div>
   </div>
 
-  <!-- Saved cars -->
   <div class="card">
     <h3>[ REGISTERED FLEET ] <span id="carCount">0 UNITS</span></h3>
-    <div class="garage-grid" id="garageGrid">
-      <div class="empty-garage">
-        <p>NO VEHICLES CONFIGURED YET</p>
-        <p>ADD A UNIT BELOW TO GET STARTED</p>
-      </div>
-    </div>
+    <div class="garage-grid" id="garageGrid"></div>
   </div>
 
-  <!-- Add car -->
   <div class="card">
     <h3>[ REGISTER NEW UNIT ] <span></span></h3>
-
     <div class="search-row">
       <span class="search-icon">⌕</span>
-      <input class="search-input" id="searchInput" type="text"
-        placeholder="SEARCH BY MAKE OR MODEL (e.g. BMW, Corolla...)">
+      <input class="search-input" id="searchInput" type="text" placeholder="SEARCH BY MAKE OR MODEL">
     </div>
-
     <div class="selects-grid">
-      <div class="field">
-        <label>MAKE</label>
-        <select id="selMake"><option value="">— SELECT MAKE —</option></select>
-      </div>
-      <div class="field">
-        <label>MODEL</label>
-        <select id="selModel" disabled><option value="">— SELECT MODEL —</option></select>
-      </div>
-      <div class="field">
-        <label>ENGINE SIZE (L)</label>
-        <select id="selEngine" disabled><option value="">—</option></select>
-      </div>
-      <div class="field">
-        <label>TRANSMISSION</label>
-        <select id="selTrans" disabled><option value="">—</option></select>
-      </div>
-      <div class="field">
-        <label>FUEL TYPE</label>
-        <select id="selFuel" disabled><option value="">—</option></select>
-      </div>
+      <div class="field"><label>MAKE</label><select id="selMake"><option value="">— SELECT MAKE —</option></select></div>
+      <div class="field"><label>MODEL</label><select id="selModel" disabled><option value="">— SELECT MODEL —</option></select></div>
+      <div class="field"><label>ENGINE (L)</label><select id="selEngine" disabled><option value="">—</option></select></div>
+      <div class="field"><label>TRANSMISSION</label><select id="selTrans" disabled><option value="">—</option></select></div>
+      <div class="field"><label>FUEL TYPE</label><select id="selFuel" disabled><option value="">—</option></select></div>
     </div>
-
     <div class="results-list" id="resultsList"></div>
-
     <div class="selected-preview" id="selectedPreview">
-      <div class="preview-header">
-        <div class="preview-title" id="previewTitle">—</div>
-        <div class="preview-badge" id="previewBadge">—</div>
-      </div>
+      <div class="preview-header"><div class="preview-title" id="previewTitle">—</div><div class="preview-badge" id="previewBadge">—</div></div>
       <div class="preview-grid">
         <div class="preview-item"><div class="pi-label">ENGINE</div><div class="pi-val" id="pEngine">—</div></div>
         <div class="preview-item"><div class="pi-label">CYLINDERS</div><div class="pi-val" id="pCyl">—</div></div>
         <div class="preview-item"><div class="pi-label">TRANSMISSION</div><div class="pi-val" id="pTrans">—</div></div>
-        <div class="preview-item"><div class="pi-label">FUEL TYPE</div><div class="pi-val" id="pFuel">—</div></div>
-        <div class="preview-item"><div class="pi-label">FUEL COMB</div><div class="pi-val" id="pFuelComb">—</div></div>
-        <div class="preview-item"><div class="pi-label">VEHICLE CLASS</div><div class="pi-val" id="pClass">—</div></div>
-        <div class="preview-item"><div class="pi-label">CO2 (DATASET)</div><div class="pi-val" id="pCO2" style="color:#6a8a5a">—</div></div>
+        <div class="preview-item"><div class="pi-label">FUEL</div><div class="pi-val" id="pFuel">—</div></div>
+        <div class="preview-item"><div class="pi-label">COMB (L/100)</div><div class="pi-val" id="pFuelComb">—</div></div>
+        <div class="preview-item"><div class="pi-label">CLASS</div><div class="pi-val" id="pClass">—</div></div>
+        <div class="preview-item"><div class="pi-label">CO₂ (g/km)</div><div class="pi-val" id="pCO2" style="color:#6a8a5a">—</div></div>
         <div class="preview-item"><div class="pi-label">MAKE TYPE</div><div class="pi-val" id="pMakeType">—</div></div>
       </div>
     </div>
-
     <div class="bottom-row">
-      <div class="field name-field">
-        <label>UNIT CALLSIGN (OPTIONAL)</label>
-        <input type="text" id="carNickname" placeholder="e.g. UNIT-01 / NORTH DEPOT"
-          oninput="this.value=this.value.toUpperCase()">
-      </div>
+      <div class="field name-field"><label>CALLSIGN (OPTIONAL)</label><input type="text" id="carNickname" placeholder="e.g. UNIT-01" oninput="this.value=this.value.toUpperCase()"></div>
       <button class="add-btn" id="addBtn" onclick="addCar()">+ REGISTER UNIT</button>
     </div>
   </div>
-
 </div>
 
 <script>
 let allCars = [], filteredCars = [], selectedCar = null;
-let garage  = JSON.parse(localStorage.getItem('garage') || '[]');
-let activeDeviceIds = new Set();
-
+let garage = JSON.parse(localStorage.getItem('garage') || '[]');
+let activeDeviceIds = new Set();    // devices that have sent GPS or OBD2 within last 60s
 const FUEL_LABELS = {X:'Regular',Z:'Premium',D:'Diesel',E:'Ethanol',N:'Natural Gas'};
 
-// ── Leaflet fleet map ─────────────────────────────────────────────────────────
 let fleetMap, markers = {};
-
 function initFleetMap() {
   fleetMap = L.map('fleetMap').setView([36.897028, 7.756056], 5);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '© OSM & CartoDB', subdomains: 'abcd', maxZoom: 19
   }).addTo(fleetMap);
 }
-
 function makeMarkerIcon(online) {
   const color = online ? '#6a9a6a' : '#c08a8a';
   const opacity = online ? 1 : 0.6;
   return L.divIcon({
-    className: '',
-    html: `<div style="
-      width:14px;height:14px;border-radius:50%;
-      background:${color};opacity:${opacity};
-      border:2px solid ${online ? '#fff' : '#ccc'};
-      box-shadow:0 0 ${online ? '8px ' + color : '0 #000'};
-    "></div>`,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7],
-    popupAnchor: [0, -10]
+    className: '', html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};opacity:${opacity};border:2px solid ${online ? '#fff' : '#ccc'};box-shadow:0 0 ${online ? '6px '+color : '0'}"></div>`,
+    iconSize: [14,14], iconAnchor: [7,7], popupAnchor: [0,-10]
   });
 }
 
-// Fetch latest GPS for all garage cars and place/update markers
-async function updateFleetMap() {
-  let onlineCount = 0, offlineCount = 0, positioned = [];
-
-  for (const car of garage) {
-    const id = car.device_id || 'default';
-    const isOnline = activeDeviceIds.has(id);
-    isOnline ? onlineCount++ : offlineCount++;
-
-    try {
-      const r    = await fetch('/gps?car_id=' + id);
-      const pts  = await r.json();
-      const last = pts.length ? pts[pts.length - 1] : null;
-
-      const label = car.nickname || car.model;
-      const popup = `
-        <b>${car.make} ${label}</b><br>
-        ID: ${id}<br>
-        Status: <span style="color:${isOnline ? '#6a9a6a' : '#c08a8a'}">${isOnline ? 'CONNECTED' : 'OFFLINE'}</span><br>
-        ${last ? `Lat: ${last.lat.toFixed(5)}<br>Lng: ${last.lng.toFixed(5)}<br>Last seen: ${new Date(last.time).toLocaleTimeString()}` : 'No GPS data'}
-      `;
-
-      if (last) {
-        positioned.push([last.lat, last.lng]);
-        if (markers[id]) {
-          markers[id].setLatLng([last.lat, last.lng]);
-          markers[id].setIcon(makeMarkerIcon(isOnline));
-          markers[id].getPopup().setContent(popup);
-        } else {
-          markers[id] = L.marker([last.lat, last.lng], { icon: makeMarkerIcon(isOnline) })
-            .addTo(fleetMap)
-            .bindPopup(popup);
-        }
-      } else {
-        if (markers[id]) {
-          markers[id].setIcon(makeMarkerIcon(false));
-          markers[id].getPopup().setContent(popup);
-        }
-      }
-    } catch(e) { /* GPS unreachable for this car */ }
-  }
-
-  const currentIds = new Set(garage.map(c => c.device_id || 'default'));
-  for (const id of Object.keys(markers)) {
-    if (!currentIds.has(id)) { fleetMap.removeLayer(markers[id]); delete markers[id]; }
-  }
-
-  if (positioned.length > 0) {
-    fleetMap.fitBounds(positioned.length === 1
-      ? L.latLng(positioned[0]).toBounds(5000)
-      : L.latLngBounds(positioned).pad(0.2)
-    );
-  }
-
-  document.getElementById('sumTotal').textContent   = garage.length;
-  document.getElementById('sumOnline').textContent  = onlineCount;
-  document.getElementById('sumOffline').textContent = offlineCount;
-  document.getElementById('sumPct').textContent     = garage.length
-    ? Math.round(onlineCount / garage.length * 100) + '%' : '—';
-  document.getElementById('mapStatus').textContent  =
-    onlineCount + ' ONLINE · ' + offlineCount + ' OFFLINE';
-}
-
-// ── Load dataset ─────────────────────────────────────────────────────────────
-async function loadDataset() {
-  try {
-    const r = await fetch('/cars_dataset.json');
-    allCars  = await r.json();
-    populateMakes();
-    renderGarage();
-  } catch(e) { console.error('Could not load cars_dataset.json', e); }
-}
-
-// ── Poll server for active device IDs ────────────────────────────────────────
+// Fetch server's active device list (based on actual pings)
 async function pollDevices() {
   try {
-    const r    = await fetch('/devices');
-    const devs = await r.json();
-    activeDeviceIds = new Set(devs);
+    const res = await fetch('/devices');
+    const devices = await res.json();  // array of car_id strings that sent data recently
+    activeDeviceIds = new Set(devices);
     renderGarage();
     updateFleetMap();
-  } catch(e) { /* server unreachable */ }
+  } catch(e) { /* server unreachable, keep old set */ }
+}
+
+// Update map markers using stored GPS history per car (from server)
+async function updateFleetMap() {
+  let onlineCount = 0, offlineCount = 0, boundsPoints = [];
+  for (const car of garage) {
+    const devId = car.device_id;
+    const isOnline = activeDeviceIds.has(devId);
+    isOnline ? onlineCount++ : offlineCount++;
+    try {
+      const gpsRes = await fetch(`/gps?car_id=${devId}`);
+      const gpsLog = await gpsRes.json();
+      const lastPoint = gpsLog && gpsLog.length ? gpsLog[gpsLog.length-1] : null;
+      const popupHtml = `<b>${car.make} ${car.nickname || car.model}</b><br>ID: ${devId}<br>Status: <span style="color:${isOnline?'#6a9a6a':'#c08a8a'}">${isOnline?'CONNECTED · DATA ACTIVE':'OFFLINE · NO RECENT DATA'}</span><br>${lastPoint ? `📍 Lat: ${lastPoint.lat.toFixed(5)}<br>Lng: ${lastPoint.lng.toFixed(5)}<br>🕒 ${new Date(lastPoint.time).toLocaleTimeString()}` : '⚠️ No GPS history yet'}`;
+      if (lastPoint) {
+        boundsPoints.push([lastPoint.lat, lastPoint.lng]);
+        if (markers[devId]) {
+          markers[devId].setLatLng([lastPoint.lat, lastPoint.lng]);
+          markers[devId].setIcon(makeMarkerIcon(isOnline));
+          markers[devId].getPopup().setContent(popupHtml);
+        } else {
+          markers[devId] = L.marker([lastPoint.lat, lastPoint.lng], { icon: makeMarkerIcon(isOnline) }).addTo(fleetMap).bindPopup(popupHtml);
+        }
+      } else {
+        if (markers[devId]) markers[devId].setIcon(makeMarkerIcon(false));
+        else {
+          // create invisible fallback? better: show default but offline marker near center? we'll skip creation until GPS appears.
+        }
+      }
+    } catch(e) { /* ignore */ }
+  }
+  // Clean markers for removed cars
+  const currentIds = new Set(garage.map(c => c.device_id));
+  for (const id of Object.keys(markers)) if (!currentIds.has(id)) { fleetMap.removeLayer(markers[id]); delete markers[id]; }
+  if (boundsPoints.length) {
+    if (boundsPoints.length === 1) fleetMap.fitBounds(L.latLng(boundsPoints[0]).toBounds(5000));
+    else fleetMap.fitBounds(L.latLngBounds(boundsPoints).pad(0.2));
+  }
+  document.getElementById('sumTotal').textContent = garage.length;
+  document.getElementById('sumOnline').textContent = onlineCount;
+  document.getElementById('sumOffline').textContent = offlineCount;
+  document.getElementById('sumPct').textContent = garage.length ? Math.round(onlineCount/garage.length*100)+'%' : '—';
+  document.getElementById('mapStatus').textContent = onlineCount+' ONLINE · '+offlineCount+' OFFLINE';
+}
+
+// Load dataset and initial UI
+async function loadDataset() {
+  try {
+    const res = await fetch('/cars_dataset.json');
+    allCars = await res.json();
+    populateMakes();
+    renderGarage();
+    pollDevices(); // immediate
+    setInterval(pollDevices, 8000);
+    setInterval(() => updateFleetMap(), 10000);
+  } catch(e) { console.error('dataset error', e); }
 }
 
 function populateMakes() {
   const makes = [...new Set(allCars.map(c=>c.make))].sort();
-  const sel   = document.getElementById('selMake');
-  makes.forEach(m => {
-    const o = document.createElement('option');
-    o.value = m; o.textContent = m; sel.appendChild(o);
-  });
+  const sel = document.getElementById('selMake');
+  makes.forEach(m => { let o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o); });
 }
 
-// ── Cascading selects ────────────────────────────────────────────────────────
+// cascading selects
 document.getElementById('selMake').onchange = function() {
   resetFrom('model');
-  if (!this.value) return;
+  if(!this.value) return;
   const models = [...new Set(allCars.filter(c=>c.make===this.value).map(c=>c.model))].sort();
   const sel = document.getElementById('selModel');
   sel.innerHTML = '<option value="">— SELECT MODEL —</option>';
-  models.forEach(m => { const o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o); });
-  sel.disabled = false;
+  models.forEach(m => { let o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o); });
+  sel.disabled=false;
 };
 document.getElementById('selModel').onchange = function() {
   resetFrom('engine');
-  if (!this.value) return;
-  const make    = document.getElementById('selMake').value;
-  const engines = [...new Set(allCars.filter(c=>c.make===make&&c.model===this.value).map(c=>c.engine_size))].sort((a,b)=>a-b);
-  const sel     = document.getElementById('selEngine');
-  sel.innerHTML = '<option value="">—</option>';
-  engines.forEach(e => { const o=document.createElement('option'); o.value=e; o.textContent=e+'L'; sel.appendChild(o); });
-  sel.disabled = false;
+  if(!this.value) return;
+  const make=document.getElementById('selMake').value;
+  const engines=[...new Set(allCars.filter(c=>c.make===make&&c.model===this.value).map(c=>c.engine_size))].sort((a,b)=>a-b);
+  const sel=document.getElementById('selEngine');
+  sel.innerHTML='<option value="">—</option>';
+  engines.forEach(e=>{let o=document.createElement('option'); o.value=e; o.textContent=e+'L'; sel.appendChild(o);});
+  sel.disabled=false;
 };
 document.getElementById('selEngine').onchange = function() {
   resetFrom('trans');
-  if (!this.value) return;
+  if(!this.value) return;
   const make=document.getElementById('selMake').value, model=document.getElementById('selModel').value;
   const trans=[...new Set(allCars.filter(c=>c.make===make&&c.model===model&&c.engine_size==this.value).map(c=>c.transmission))].sort();
   const sel=document.getElementById('selTrans');
   sel.innerHTML='<option value="">—</option>';
-  trans.forEach(t => { const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
+  trans.forEach(t=>{let o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o);});
   sel.disabled=false;
 };
 document.getElementById('selTrans').onchange = function() {
   resetFrom('fuel');
-  if (!this.value) return;
+  if(!this.value) return;
   const make=document.getElementById('selMake').value, model=document.getElementById('selModel').value, eng=document.getElementById('selEngine').value;
   const fuels=[...new Set(allCars.filter(c=>c.make===make&&c.model===model&&c.engine_size==eng&&c.transmission===this.value).map(c=>c.fuel_type))].sort();
   const sel=document.getElementById('selFuel');
   sel.innerHTML='<option value="">—</option>';
-  fuels.forEach(f => { const o=document.createElement('option'); o.value=f; o.textContent=f+' — '+FUEL_LABELS[f]; sel.appendChild(o); });
+  fuels.forEach(f=>{let o=document.createElement('option'); o.value=f; o.textContent=f+' — '+(FUEL_LABELS[f]||f); sel.appendChild(o);});
   sel.disabled=false;
 };
 document.getElementById('selFuel').onchange = function() {
-  if (!this.value) { selectedCar=null; hidePreview(); return; }
-  const make=document.getElementById('selMake').value, model=document.getElementById('selModel').value,
-        eng=document.getElementById('selEngine').value, trans=document.getElementById('selTrans').value;
+  if(!this.value){ selectedCar=null; hidePreview(); return; }
+  const make=document.getElementById('selMake').value, model=document.getElementById('selModel').value, eng=document.getElementById('selEngine').value, trans=document.getElementById('selTrans').value;
   const car=allCars.find(c=>c.make===make&&c.model===model&&c.engine_size==eng&&c.transmission===trans&&c.fuel_type===this.value);
-  if (car) showPreview(car);
+  if(car) showPreview(car);
 };
-
-function resetFrom(level) {
+function resetFrom(level){
   selectedCar=null; hidePreview();
   const ids=['selModel','selEngine','selTrans','selFuel'];
   const ph=['— SELECT MODEL —','—','—','—'];
-  const start=['model','engine','trans','fuel'].indexOf(level);
-  for(let i=start;i<ids.length;i++){
-    const s=document.getElementById(ids[i]);
-    s.innerHTML=`<option value="">${ph[i]}</option>`; s.disabled=true;
-  }
+  const startIdx = ['model','engine','trans','fuel'].indexOf(level);
+  for(let i=startIdx; i<ids.length; i++){ let s=document.getElementById(ids[i]); s.innerHTML=`<option value="">${ph[i]}</option>`; s.disabled=true; }
 }
-
-// ── Search ───────────────────────────────────────────────────────────────────
-document.getElementById('searchInput').addEventListener('input', function() {
+function showPreview(car){
+  selectedCar=car;
+  document.getElementById('previewTitle').innerHTML=`${car.make} ${car.model}`;
+  document.getElementById('previewBadge').innerHTML=car.vehicle_class;
+  document.getElementById('pEngine').innerHTML=car.engine_size+'L';
+  document.getElementById('pCyl').innerHTML=car.cylinders;
+  document.getElementById('pTrans').innerHTML=car.transmission;
+  document.getElementById('pFuel').innerHTML=`<span class="fuel-badge fuel-${car.fuel_type}">${car.fuel_type} — ${FUEL_LABELS[car.fuel_type]||car.fuel_type}</span>`;
+  document.getElementById('pFuelComb').innerHTML=car.fuel_comb+' L/100km';
+  document.getElementById('pClass').innerHTML=car.vehicle_class_type;
+  document.getElementById('pCO2').innerHTML=car.co2+' g/km';
+  document.getElementById('pMakeType').innerHTML=car.make_type;
+  document.getElementById('selectedPreview').classList.add('show');
+  document.getElementById('addBtn').classList.add('ready');
+}
+function hidePreview(){
+  document.getElementById('selectedPreview').classList.remove('show');
+  document.getElementById('addBtn').classList.remove('ready');
+}
+function makeDeviceId(){ return 'CAR-'+Math.floor(Math.random()*0x10000).toString(16).toUpperCase().padStart(4,'0'); }
+function addCar(){
+  if(!selectedCar) return;
+  const nick=document.getElementById('carNickname').value.trim()||'';
+  garage.push({...selectedCar, nickname:nick, id:Date.now(), device_id:makeDeviceId()});
+  saveGarage(); renderGarage(); updateFleetMap();
+  resetFrom('model'); document.getElementById('selMake').value=''; document.getElementById('searchInput').value=''; document.getElementById('carNickname').value='';
+  selectedCar=null; hidePreview();
+}
+function deleteCar(id,e){ e.stopPropagation(); if(confirm('Remove unit?')){ garage=garage.filter(c=>c.id!==id); saveGarage(); renderGarage(); updateFleetMap(); } }
+function openDashboard(car){ sessionStorage.setItem('activeCar', JSON.stringify(car)); window.location.href='/'; }
+function saveGarage(){ localStorage.setItem('garage', JSON.stringify(garage)); }
+function copyDeviceId(id,btn){
+  const car=garage.find(c=>c.id===id);
+  if(car && car.device_id){ navigator.clipboard.writeText(car.device_id); btn.textContent='COPIED!'; setTimeout(()=>{ btn.textContent='COPY'; },1200); }
+}
+function renderGarage(){
+  const grid=document.getElementById('garageGrid');
+  document.getElementById('carCount').textContent=garage.length+' UNIT'+(garage.length!==1?'S':'');
+  if(!garage.length){ grid.innerHTML='<div class="empty-garage"><p>NO UNITS REGISTERED</p><p>ADD A VEHICLE — ONLINE STATUS REQUIRES DEVICE DATA</p></div>'; return; }
+  grid.innerHTML=garage.map(car=>{
+    const devId=car.device_id;
+    const online=activeDeviceIds.has(devId);
+    const badgeHtml=`<div class="conn-badge ${online?'conn-online':'conn-offline'}"><span class="dot"></span>${online?'CONNECTED · DATA ACTIVE':'OFFLINE · NO RECENT DATA'}</div>`;
+    return `<div class="car-card ${online?'online-card':''}" onclick="openDashboard(${JSON.stringify(car).replace(/"/g,'&quot;')})">
+      <button class="delete-btn" onclick="deleteCar(${car.id},event)">✕</button>
+      ${badgeHtml}
+      <div class="car-make">${car.make}</div>
+      <div class="car-model">${car.nickname||car.model}</div>
+      <div class="car-specs">
+        <div class="spec"><div class="spec-label">ENGINE</div><div class="spec-val">${car.engine_size}L · ${car.cylinders}cyl</div></div>
+        <div class="spec"><div class="spec-label">TRANSMISSION</div><div class="spec-val">${car.transmission}</div></div>
+        <div class="spec"><div class="spec-label">FUEL</div><div class="spec-val"><span class="fuel-badge fuel-${car.fuel_type}">${car.fuel_type}</span></div></div>
+        <div class="spec"><div class="spec-label">CLASS</div><div class="spec-val">${car.vehicle_class_type}</div></div>
+      </div>
+      <div class="car-co2"><span class="co2-label">DATASET CO₂</span><span class="co2-val">${car.co2} G/KM</span></div>
+      <div class="device-id-row" onclick="event.stopPropagation()">
+        <span class="device-id-label">DEVICE ID</span>
+        <span class="device-id-code">${car.device_id||'—'}</span>
+        <button class="copy-btn" onclick="copyDeviceId(${car.id},this)">COPY</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+// search logic
+document.getElementById('searchInput').addEventListener('input', function(){
   const q=this.value.trim().toUpperCase();
   const list=document.getElementById('resultsList');
-  if (q.length<2){list.classList.remove('show');return;}
+  if(q.length<2){ list.classList.remove('show'); return; }
   filteredCars=allCars.filter(c=>c.make.toUpperCase().includes(q)||c.model.toUpperCase().includes(q)).slice(0,40);
-  if (!filteredCars.length){list.classList.remove('show');return;}
-  list.innerHTML=filteredCars.map((c,i)=>`
-    <div class="result-item" onclick="selectFromSearch(${i})">
-      <div>
-        <div class="result-name">${c.make} ${c.model}</div>
-        <div class="result-meta">${c.engine_size}L · ${c.cylinders}cyl · ${c.transmission} · ${c.vehicle_class}</div>
-      </div>
-      <div style="text-align:right">
-        <span class="fuel-badge fuel-${c.fuel_type}">${c.fuel_type}</span>
-        <div class="result-co2" style="margin-top:4px">${c.co2} g/km</div>
-      </div>
-    </div>`).join('');
+  if(!filteredCars.length){ list.classList.remove('show'); return; }
+  list.innerHTML=filteredCars.map((c,i)=>`<div class="result-item" onclick="selectFromSearch(${i})"><div><div class="result-name">${c.make} ${c.model}</div><div class="result-meta">${c.engine_size}L · ${c.cylinders}cyl · ${c.transmission}</div></div><div><span class="fuel-badge fuel-${c.fuel_type}">${c.fuel_type}</span><div class="result-co2">${c.co2} g/km</div></div></div>`).join('');
   list.classList.add('show');
 });
-
-function selectFromSearch(i) {
-  const car=filteredCars[i];
+window.selectFromSearch = function(idx){
+  const car=filteredCars[idx];
   document.getElementById('selMake').value=car.make;
   document.getElementById('selMake').dispatchEvent(new Event('change'));
   setTimeout(()=>{
@@ -586,110 +557,10 @@ function selectFromSearch(i) {
   },50);
   document.getElementById('resultsList').classList.remove('show');
   document.getElementById('searchInput').value=car.make+' '+car.model;
-}
-
-// ── Preview ──────────────────────────────────────────────────────────────────
-function showPreview(car) {
-  selectedCar=car;
-  document.getElementById('previewTitle').textContent=car.make+' '+car.model;
-  document.getElementById('previewBadge').textContent=car.vehicle_class;
-  document.getElementById('pEngine').textContent=car.engine_size+'L';
-  document.getElementById('pCyl').textContent=car.cylinders;
-  document.getElementById('pTrans').textContent=car.transmission;
-  document.getElementById('pFuel').innerHTML=`<span class="fuel-badge fuel-${car.fuel_type}">${car.fuel_type} — ${FUEL_LABELS[car.fuel_type]||car.fuel_type}</span>`;
-  document.getElementById('pFuelComb').textContent=car.fuel_comb+' L/100km';
-  document.getElementById('pClass').textContent=car.vehicle_class_type;
-  document.getElementById('pCO2').textContent=car.co2+' g/km';
-  document.getElementById('pMakeType').textContent=car.make_type;
-  document.getElementById('selectedPreview').classList.add('show');
-  document.getElementById('addBtn').classList.add('ready');
-}
-function hidePreview(){
-  document.getElementById('selectedPreview').classList.remove('show');
-  document.getElementById('addBtn').classList.remove('ready');
-}
-
-// ── Garage ───────────────────────────────────────────────────────────────────
-function makeDeviceId() {
-  return 'CAR-' + Math.floor(Math.random()*0x10000).toString(16).toUpperCase().padStart(4,'0');
-}
-
-function copyDeviceId(id, btn) {
-  const code = garage.find(c=>c.id===id)?.device_id || '';
-  navigator.clipboard.writeText(code).then(()=>{
-    btn.textContent='COPIED!';
-    setTimeout(()=>{ btn.textContent='COPY'; }, 1500);
-  });
-}
-
-function addCar() {
-  if (!selectedCar) return;
-  const nick=document.getElementById('carNickname').value.trim()||'';
-  garage.push({...selectedCar, nickname:nick, id:Date.now(), device_id:makeDeviceId()});
-  saveGarage(); renderGarage(); updateFleetMap();
-  resetFrom('model');
-  document.getElementById('selMake').value='';
-  document.getElementById('searchInput').value='';
-  document.getElementById('carNickname').value='';
-  selectedCar=null; hidePreview();
-}
-
-function deleteCar(id, e) {
-  e.stopPropagation();
-  if (!confirm('Remove this unit from fleet?')) return;
-  garage=garage.filter(c=>c.id!==id);
-  saveGarage(); renderGarage(); updateFleetMap();
-}
-
-function openDashboard(car) {
-  sessionStorage.setItem('activeCar', JSON.stringify(car));
-  window.location.href='/';
-}
-
-function saveGarage() { localStorage.setItem('garage', JSON.stringify(garage)); }
-
-function renderGarage() {
-  const grid=document.getElementById('garageGrid');
-  document.getElementById('carCount').textContent=garage.length+' UNIT'+(garage.length!==1?'S':'');
-  if (!garage.length) {
-    grid.innerHTML='<div class="empty-garage"><p>NO UNITS REGISTERED YET</p><p>ADD A VEHICLE BELOW TO GET STARTED</p></div>';
-    return;
-  }
-  grid.innerHTML=garage.map(car=>{
-    const devId  = car.device_id || '';
-    const online = activeDeviceIds.has(devId);
-    const badgeHtml = `<div class="conn-badge ${online ? 'conn-online' : 'conn-offline'}">
-      <span class="dot"></span>${online ? 'CONNECTED' : 'OFFLINE'}
-    </div>`;
-    return `
-    <div class="car-card ${online ? 'online-card' : ''}" onclick="openDashboard(${JSON.stringify(car).replace(/"/g,'&quot;')})">
-      <button class="delete-btn" onclick="deleteCar(${car.id},event)">✕</button>
-      ${badgeHtml}
-      <div class="car-make">${car.make}</div>
-      <div class="car-model">${car.nickname||car.model}</div>
-      <div class="car-specs">
-        <div class="spec"><div class="spec-label">ENGINE</div><div class="spec-val">${car.engine_size}L · ${car.cylinders}cyl</div></div>
-        <div class="spec"><div class="spec-label">TRANSMISSION</div><div class="spec-val">${car.transmission}</div></div>
-        <div class="spec"><div class="spec-label">FUEL</div><div class="spec-val"><span class="fuel-badge fuel-${car.fuel_type}">${car.fuel_type}</span></div></div>
-        <div class="spec"><div class="spec-label">CLASS</div><div class="spec-val">${car.vehicle_class_type}</div></div>
-      </div>
-      <div class="car-co2">
-        <span class="co2-label">DATASET CO2</span>
-        <span class="co2-val">${car.co2} G/KM</span>
-      </div>
-      <div class="device-id-row" onclick="event.stopPropagation()">
-        <span class="device-id-label">DEVICE ID</span>
-        <span class="device-id-code">${car.device_id||'—'}</span>
-        <button class="copy-btn" onclick="copyDeviceId(${car.id},this)">COPY</button>
-      </div>
-    </div>`;
-  }).join('');
-}
+};
 
 initFleetMap();
 loadDataset();
-pollDevices();
-setInterval(pollDevices, 10000);
 </script>
 </body>
 </html>
