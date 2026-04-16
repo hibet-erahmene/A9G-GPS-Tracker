@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS + OBD2 TRACKER</title>
+    <title>GPS + OBD2 TRACKER — Driving Mode Monitor</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            background: #ffe8f0;
+            background: #0a0c12;
             font-family: 'Orbitron', monospace;
             min-height: 100vh;
             padding: 20px;
+            background-image: radial-gradient(circle at 10% 20%, rgba(30,20,35,0.95) 0%, #0a0c12 100%);
         }
 
         .container { max-width: 1400px; margin: 0 auto; }
@@ -23,28 +25,28 @@
 
         .header h1 {
             font-family: 'Orbitron', monospace;
-            font-size: 2.2rem; font-weight: 800;
-            letter-spacing: 3px; color: #5a3d5c;
-            text-shadow: 2px 2px 0 #f0c0d0;
+            font-size: 2rem; font-weight: 800;
+            letter-spacing: 3px; color: #d0c0e0;
+            text-shadow: 0 0 8px #7c6a8e;
             margin-bottom: 5px;
         }
 
         .header p {
-            color: #8a6a8e;
+            color: #8a7a9e;
             font-family: 'Share Tech Mono', monospace;
-            font-size: 0.75rem; letter-spacing: 2px;
+            font-size: 0.7rem; letter-spacing: 2px;
         }
 
         .garage-link {
             display: inline-block; margin-top: 8px;
             font-family: 'Share Tech Mono', monospace;
             font-size: 0.65rem; letter-spacing: 2px;
-            color: #b08fc0; text-decoration: none;
-            border: 1px solid rgba(176,143,192,.4);
+            color: #a090c0; text-decoration: none;
+            border: 1px solid rgba(160,128,192,.4);
             padding: 3px 12px; border-radius: 3px;
             transition: all .2s;
         }
-        .garage-link:hover { background: rgba(176,143,192,.15); color: #c9add8; }
+        .garage-link:hover { background: rgba(160,128,192,.15); color: #c9add8; }
 
         .status-badge {
             display: inline-block; padding: 5px 15px;
@@ -52,8 +54,8 @@
             margin-top: 10px; font-family: 'Share Tech Mono', monospace;
             letter-spacing: 1px;
         }
-        .status-online  { background: #e8d5e8; color: #5a3d5c; border-left: 3px solid #7caf8c; }
-        .status-offline { background: #f0e0e4; color: #b87a7a; border-left: 3px solid #e0a0a0; }
+        .status-online  { background: #1a2820; color: #9ab86a; border-left: 3px solid #7caf8c; }
+        .status-offline { background: #2a1a1a; color: #c07a7a; border-left: 3px solid #c07a7a; }
 
         .button-group {
             display: flex; gap: 10px;
@@ -61,51 +63,66 @@
         }
 
         .btn {
-            background: #e8d5e8; color: #6a4a6e;
-            border: 1px solid #c8a8d0;
+            background: #1e1a24; color: #c0b0d0;
+            border: 1px solid #4a3a5a;
             padding: 8px 16px; border-radius: 4px;
             font-family: 'Share Tech Mono', monospace;
             font-size: 0.7rem; font-weight: 600;
             letter-spacing: 1px; cursor: pointer;
             transition: all 0.3s ease;
         }
-        .btn:hover         { background: #d4c0d8; color: #4a2a4e; box-shadow: 0 0 10px rgba(106,74,110,.3); }
-        .btn-danger        { border-color: #e0a0a0; color: #b87070; }
-        .btn-danger:hover  { background: #e8c8c8; color: #8a5050; }
-        .btn-success       { border-color: #a8d0a8; color: #5a8a5a; }
-        .btn-success:hover { background: #d0e8d0; color: #3a6a3a; }
-        .btn-warning       { border-color: #e0d0a0; color: #b89a40; }
-        .btn-warning:hover { background: #e8e0c0; color: #8a7030; }
+        .btn:hover         { background: #2a2430; color: #e0d0f0; border-color: #7a6a8e; }
+        .btn-danger        { border-color: #8a5a5a; color: #c08a8a; }
+        .btn-danger:hover  { background: #3a2424; color: #e0a0a0; }
+        .btn-success       { border-color: #5a8a5a; color: #8ab86a; }
+        .btn-success:hover { background: #1e2a1a; color: #b0e090; }
+        .btn-warning       { border-color: #8a7a40; color: #c0a860; }
+        .btn-warning:hover { background: #2a2418; color: #e0c880; }
 
-        .saved-routes {
-            margin-top: 15px; background: #f0e8f0;
-            border-radius: 6px; padding: 12px;
-            border: 1px solid #d8c8e0;
-            max-height: 200px; overflow-y: auto;
+        /* Speed Profile Chart Container */
+        .speed-chart-container {
+            background: rgba(18,16,24,0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(120,100,140,0.5);
         }
-        .saved-routes h4 {
-            color: #6a4a6e; font-size: 0.7rem;
-            letter-spacing: 2px; margin-bottom: 10px;
+        .chart-header {
+            display: flex; justify-content: space-between;
+            margin-bottom: 12px; flex-wrap: wrap;
+            gap: 10px;
+        }
+        .chart-title {
             font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem; color: #c0b0d0;
+            letter-spacing: 2px;
         }
-        .route-item {
-            background: #faf5fa; border-radius: 4px;
-            padding: 8px 12px; margin-bottom: 8px;
-            font-size: 0.65rem; font-family: 'Share Tech Mono', monospace;
-            color: #8a6a8e; border-left: 2px solid #9caf8c;
-            display: flex; justify-content: space-between; align-items: center;
+        .chart-stats {
+            display: flex; gap: 16px;
         }
-        .route-name   { font-weight: 600; color: #6a8a5a; }
-        .route-stats  { font-size: 0.6rem; color: #a08aa4; }
-        .route-actions { display: flex; gap: 8px; }
-        .route-btn {
-            background: none; border: none; cursor: pointer;
-            font-size: 0.7rem; padding: 2px 6px;
-            border-radius: 3px; transition: all 0.3s ease;
+        .stat-chip {
+            background: rgba(30,25,40,0.8);
+            padding: 4px 12px; border-radius: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.6rem; color: #9ab86a;
         }
-        .route-btn:hover       { background: #e8dce8; }
-        .route-btn-restore     { color: #6a9a6a; }
-        .route-btn-delete      { color: #c08a8a; }
+        #speedChart {
+            max-height: 260px;
+            width: 100%;
+        }
+        .speed-metrics {
+            display: flex; gap: 24px; margin-top: 12px;
+            justify-content: center;
+        }
+        .metric {
+            text-align: center;
+            background: rgba(18,16,24,0.6);
+            padding: 8px 16px;
+            border-radius: 8px;
+        }
+        .metric-val { font-family: 'Orbitron', monospace; font-size: 1rem; color: #d0b86a; font-weight: 700; }
+        .metric-label { font-size: 0.5rem; color: #8a7a9e; letter-spacing: 1px; }
 
         .dashboard-grid {
             display: grid; grid-template-columns: 1fr 1fr;
@@ -113,76 +130,107 @@
         }
 
         .card {
-            background: rgba(240,232,240,0.9); backdrop-filter: blur(8px);
-            border-radius: 8px; padding: 20px;
-            border: 1px solid #d8c8e0;
-            box-shadow: 0 4px 12px rgba(0,0,0,.05);
+            background: rgba(18,16,24,0.85); backdrop-filter: blur(12px);
+            border-radius: 12px; padding: 20px;
+            border: 1px solid rgba(100,80,120,0.5);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
         }
-        .card:hover { border-color: #c0a8c8; box-shadow: 0 6px 16px rgba(0,0,0,.08); }
+        .card:hover { border-color: #7a6a8e; box-shadow: 0 6px 16px rgba(0,0,0,.4); }
         .card h3 {
-            color: #6a4a6e; font-size: 0.85rem;
+            color: #c0b0d0; font-size: 0.8rem;
             letter-spacing: 2px; margin-bottom: 15px;
-            border-bottom: 1px solid #d8c8e0; padding-bottom: 8px;
+            border-bottom: 1px solid rgba(120,100,140,0.4);
+            padding-bottom: 8px;
             font-weight: 600;
         }
 
-        #map { height: 400px; border-radius: 6px; overflow: hidden; border: 2px solid #d0c0d8; }
+        #map { height: 380px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(120,100,140,0.5); }
 
         .metrics-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
 
-        .metric {
-            background: #faf5fa; border-radius: 6px;
-            padding: 12px; text-align: center; border: 1px solid #e0d0e8;
+        .metric-card {
+            background: rgba(30,25,40,0.6); border-radius: 8px;
+            padding: 12px; text-align: center; border: 1px solid rgba(100,80,120,0.3);
         }
         .metric-label {
-            font-size: 0.6rem; text-transform: uppercase;
-            letter-spacing: 2px; color: #9a7a9e; font-weight: 600;
-            margin-bottom: 8px; font-family: 'Share Tech Mono', monospace;
+            font-size: 0.55rem; text-transform: uppercase;
+            letter-spacing: 2px; color: #8a7a9e;
+            margin-bottom: 6px; font-family: 'Share Tech Mono', monospace;
         }
         .metric-value {
-            font-size: 1.6rem; font-weight: 800; color: #6a8a5a;
+            font-size: 1.3rem; font-weight: 800; color: #9ab86a;
             font-family: 'Orbitron', monospace; letter-spacing: 2px;
         }
-        .metric-unit { font-size: 0.6rem; color: #b09ab4; margin-left: 3px; font-weight: 400; }
-        .metric-bar { width: 100%; height: 3px; background: #e0d0e8; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+        .metric-unit { font-size: 0.55rem; color: #8a7a9e; margin-left: 3px; }
+        .metric-bar { width: 100%; height: 3px; background: #2a2530; border-radius: 2px; margin-top: 8px; overflow: hidden; }
         .metric-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #9caf8c, #7c9f6c);
+            background: linear-gradient(90deg, #7c9f6c, #9ab86a);
             border-radius: 2px; transition: width 0.5s ease; width: 0%;
         }
 
         .gps-info {
-            margin-top: 15px; background: #faf5fa;
-            border-radius: 6px; padding: 12px; border: 1px solid #e0d0e8;
+            margin-top: 15px; background: rgba(30,25,40,0.6);
+            border-radius: 8px; padding: 12px; border: 1px solid rgba(100,80,120,0.3);
         }
         .gps-info-row {
             display: flex; justify-content: space-between;
-            padding: 6px 0; border-bottom: 1px solid #e8dce8;
+            padding: 6px 0; border-bottom: 1px solid rgba(100,80,120,0.2);
             font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
         }
         .gps-info-row:last-child { border-bottom: none; }
-        .gps-info-label { color: #a08aa4; letter-spacing: 1px; }
-        .gps-info-value { color: #6a8a5a; font-weight: 600; }
+        .gps-info-label { color: #8a7a9e; letter-spacing: 1px; }
+        .gps-info-value { color: #9ab86a; font-weight: 600; }
 
-        .trajectory-list { max-height: 300px; overflow-y: auto; margin-top: 15px; }
-        .trajectory-item {
-            background: #faf5fa; border-radius: 4px;
+        .saved-routes {
+            margin-top: 15px; background: rgba(30,25,40,0.6);
+            border-radius: 8px; padding: 12px;
+            border: 1px solid rgba(100,80,120,0.3);
+            max-height: 180px; overflow-y: auto;
+        }
+        .saved-routes h4 {
+            color: #c0b0d0; font-size: 0.65rem;
+            letter-spacing: 2px; margin-bottom: 10px;
+        }
+        .route-item {
+            background: rgba(18,16,24,0.7); border-radius: 6px;
             padding: 8px 12px; margin-bottom: 8px;
             font-size: 0.65rem; font-family: 'Share Tech Mono', monospace;
-            color: #8a6a8e; border-left: 2px solid #9caf8c;
+            color: #a090c0; border-left: 2px solid #7c9f6c;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .route-name   { font-weight: 600; color: #9ab86a; }
+        .route-stats  { font-size: 0.55rem; color: #8a7a9e; }
+        .route-actions { display: flex; gap: 8px; }
+        .route-btn {
+            background: none; border: none; cursor: pointer;
+            font-size: 0.65rem; padding: 2px 8px;
+            border-radius: 3px; transition: all 0.3s ease;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .route-btn:hover       { background: #3a3040; }
+        .route-btn-restore     { color: #9ab86a; }
+        .route-btn-delete      { color: #c08a8a; }
+
+        .trajectory-list { max-height: 220px; overflow-y: auto; margin-top: 15px; }
+        .trajectory-item {
+            background: rgba(30,25,40,0.5); border-radius: 6px;
+            padding: 8px 12px; margin-bottom: 8px;
+            font-size: 0.65rem; font-family: 'Share Tech Mono', monospace;
+            color: #a090c0; border-left: 2px solid #7c9f6c;
         }
 
         .footer {
             text-align: center; margin-top: 30px; padding: 15px;
-            color: #b09ab4; font-size: 0.6rem;
+            color: #8a7a9e; font-size: 0.55rem;
             font-family: 'Share Tech Mono', monospace;
-            letter-spacing: 1px; border-top: 1px solid #e0d0e8;
+            letter-spacing: 1px; border-top: 1px solid rgba(100,80,120,0.3);
         }
 
-        .trajectory-list::-webkit-scrollbar { width: 6px; }
-        .trajectory-list::-webkit-scrollbar-track { background: #e8dce8; border-radius: 3px; }
-        .trajectory-list::-webkit-scrollbar-thumb { background: #c0a8c8; border-radius: 3px; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #1a1820; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #6a5a7e; border-radius: 3px; }
 
         @media (max-width: 768px) {
             .dashboard-grid { grid-template-columns: 1fr; }
@@ -195,7 +243,7 @@
 <div class="container">
     <div class="header">
         <h1>GPS + OBD2 TRACKER</h1>
-        <p id="carLabel">REAL-TIME TELEMETRY SYSTEM</p>
+        <p id="carLabel">DRIVING MODE MONITORING & SAFETY</p>
         <a class="garage-link" href="/garage">← BACK TO GARAGE</a><br>
         <div class="status-badge status-offline" id="statusBadge">[ CONNECTING... ]</div>
         <div class="button-group">
@@ -204,6 +252,24 @@
             <button class="btn btn-warning" id="stopAutoRefreshBtn">⏸️ STOP REFRESH</button>
             <button class="btn btn-success" id="startAutoRefreshBtn">▶️ START REFRESH</button>
             <button class="btn"             id="clearAllRoutesBtn">📁 CLEAR ALL SAVED</button>
+        </div>
+    </div>
+
+    <!-- SPEED PROFILE CHART SECTION (Driving Mode Monitoring) -->
+    <div class="speed-chart-container">
+        <div class="chart-header">
+            <div class="chart-title">📊 I SPEED PROFILE I — REAL-TIME DRIVING CYCLE MONITOR</div>
+            <div class="chart-stats">
+                <div class="stat-chip" id="liveMaxChip">⚡ MAX: -- km/h</div>
+                <div class="stat-chip" id="liveAvgChip">📈 AVG: -- km/h</div>
+            </div>
+        </div>
+        <canvas id="speedChart" width="800" height="240" style="width:100%; max-height:240px"></canvas>
+        <div class="speed-metrics">
+            <div class="metric"><div class="metric-val" id="maxSpeedVal">--</div><div class="metric-label">PEAK SPEED (km/h)</div></div>
+            <div class="metric"><div class="metric-val" id="avgSpeedVal">--</div><div class="metric-label">AVG SPEED</div></div>
+            <div class="metric"><div class="metric-val" id="distanceVal">0</div><div class="metric-label">DISTANCE (km)</div></div>
+            <div class="metric"><div class="metric-val" id="timeVal">0</div><div class="metric-label">DURATION (min)</div></div>
         </div>
     </div>
 
@@ -223,31 +289,31 @@
         <div class="card">
             <h3>[ ENGINE DATA ]</h3>
             <div class="metrics-grid">
-                <div class="metric"><div class="metric-label">RPM</div><div class="metric-value" id="rpm">--</div><div class="metric-bar"><div class="metric-bar-fill" id="rpmBar"></div></div></div>
-                <div class="metric"><div class="metric-label">SPEED</div><div class="metric-value" id="speed">-- <span class="metric-unit">KM/H</span></div><div class="metric-bar"><div class="metric-bar-fill" id="speedBar"></div></div></div>
-                <div class="metric"><div class="metric-label">COOLANT</div><div class="metric-value" id="coolant">-- <span class="metric-unit">°C</span></div></div>
-                <div class="metric"><div class="metric-label">ENGINE LOAD</div><div class="metric-value" id="load">-- <span class="metric-unit">%</span></div></div>
-                <div class="metric"><div class="metric-label">THROTTLE</div><div class="metric-value" id="throttle">-- <span class="metric-unit">%</span></div></div>
-                <div class="metric"><div class="metric-label">BATTERY</div><div class="metric-value" id="battery">-- <span class="metric-unit">V</span></div></div>
-                <div class="metric"><div class="metric-label">FUEL LEVEL</div><div class="metric-value" id="fuel">-- <span class="metric-unit">%</span></div></div>
-                <div class="metric"><div class="metric-label">MAF RATE</div><div class="metric-value" id="maf">-- <span class="metric-unit">G/S</span></div></div>
-                <div class="metric"><div class="metric-label">FUEL CONS</div><div class="metric-value" id="fuelCons">-- <span class="metric-unit">L/100KM</span></div></div>
-                <div class="metric"><div class="metric-label">CO2 EMISSION</div><div class="metric-value" id="co2">-- <span class="metric-unit">G/KM</span></div><div class="metric-bar"><div class="metric-bar-fill" id="co2Bar"></div></div></div>
+                <div class="metric-card"><div class="metric-label">RPM</div><div class="metric-value" id="rpm">--</div><div class="metric-bar"><div class="metric-bar-fill" id="rpmBar"></div></div></div>
+                <div class="metric-card"><div class="metric-label">SPEED</div><div class="metric-value" id="speed">-- <span class="metric-unit">KM/H</span></div><div class="metric-bar"><div class="metric-bar-fill" id="speedBar"></div></div></div>
+                <div class="metric-card"><div class="metric-label">COOLANT</div><div class="metric-value" id="coolant">-- <span class="metric-unit">°C</span></div></div>
+                <div class="metric-card"><div class="metric-label">ENGINE LOAD</div><div class="metric-value" id="load">-- <span class="metric-unit">%</span></div></div>
+                <div class="metric-card"><div class="metric-label">THROTTLE</div><div class="metric-value" id="throttle">-- <span class="metric-unit">%</span></div></div>
+                <div class="metric-card"><div class="metric-label">BATTERY</div><div class="metric-value" id="battery">-- <span class="metric-unit">V</span></div></div>
+                <div class="metric-card"><div class="metric-label">FUEL LEVEL</div><div class="metric-value" id="fuel">-- <span class="metric-unit">%</span></div></div>
+                <div class="metric-card"><div class="metric-label">MAF RATE</div><div class="metric-value" id="maf">-- <span class="metric-unit">G/S</span></div></div>
+                <div class="metric-card"><div class="metric-label">FUEL CONS</div><div class="metric-value" id="fuelCons">-- <span class="metric-unit">L/100KM</span></div></div>
+                <div class="metric-card"><div class="metric-label">CO2 EMISSION</div><div class="metric-value" id="co2">-- <span class="metric-unit">G/KM</span></div><div class="metric-bar"><div class="metric-bar-fill" id="co2Bar"></div></div></div>
             </div>
         </div>
     </div>
 
     <div class="card">
         <h3>[ SAVED ROUTES ]</h3>
-        <div class="saved-routes" id="savedRoutesPanel"><div style="text-align:center;color:#b09ab4">NO SAVED ROUTES</div></div>
+        <div class="saved-routes" id="savedRoutesPanel"><div style="text-align:center;color:#8a7a9e">NO SAVED ROUTES</div></div>
     </div>
 
     <div class="card">
         <h3>[ JOURNEY LOG ]</h3>
-        <div class="trajectory-list" id="trajectoryList"><div style="text-align:center;color:#b09ab4">WAITING FOR DATA...</div></div>
+        <div class="trajectory-list" id="trajectoryList"><div style="text-align:center;color:#8a7a9e">WAITING FOR DATA...</div></div>
     </div>
 
-    <div class="footer">TELEMETRY SYSTEM v1.0 | SECURE DATA STREAM | REAL-TIME MONITORING</div>
+    <div class="footer">TELEMETRY SYSTEM v2.0 | DRIVING MODE MONITORING | REAL-TIME SPEED PROFILE</div>
 </div>
 
 <script>
@@ -255,13 +321,96 @@
     const activeCar = JSON.parse(sessionStorage.getItem('activeCar') || '{}');
     const CAR_ID    = (activeCar.device_id || 'default').trim();
 
-    // Show car info in header
     document.getElementById('deviceIdDisplay').textContent = CAR_ID;
     if (activeCar.make) {
         document.getElementById('carLabel').textContent =
-            `${activeCar.make} ${activeCar.model || ''} — DEVICE: ${CAR_ID}`;
+            `${activeCar.make} ${activeCar.model || ''} — DEVICE: ${CAR_ID} | SPEED MONITOR ACTIVE`;
     } else {
-        document.getElementById('carLabel').textContent = `DEVICE: ${CAR_ID}`;
+        document.getElementById('carLabel').textContent = `DEVICE: ${CAR_ID} | DRIVING MODE ACTIVE`;
+    }
+
+    // ── Speed Profile Chart & Live Data ──────────────────────────────────────
+    let speedChartInstance = null;
+    let speedHistory = [];        // store recent speeds for chart (max 60 points)
+    let chartTimeLabels = [];
+    let tripStartTime = null;
+    let totalDistance = 0;
+    let lastSpeedPoint = null;
+    let lastLatLng = null;
+
+    function initSpeedChart() {
+        const ctx = document.getElementById('speedChart').getContext('2d');
+        speedChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Speed (km/h)',
+                    data: [],
+                    borderColor: '#9ab86a',
+                    backgroundColor: 'rgba(154,184,106,0.08)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { labels: { color: '#c0b0d0', font: { size: 10 } } },
+                    tooltip: { mode: 'index', intersect: false }
+                },
+                scales: {
+                    x: { ticks: { color: '#8a7a9e', maxRotation: 45, autoSkip: true, maxTicksLimit: 8 }, grid: { color: 'rgba(100,80,120,0.2)' } },
+                    y: { title: { display: true, text: 'km/h', color: '#8a7a9e' }, ticks: { color: '#8a7a9e' }, grid: { color: 'rgba(100,80,120,0.2)' }, min: 0, max: 140 }
+                }
+            }
+        });
+    }
+
+    function updateSpeedChart(speedKmh, timestamp) {
+        if (!speedChartInstance) return;
+        const timeLabel = new Date(timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+        speedHistory.push(speedKmh);
+        chartTimeLabels.push(timeLabel);
+        if (speedHistory.length > 60) {
+            speedHistory.shift();
+            chartTimeLabels.shift();
+        }
+        speedChartInstance.data.labels = chartTimeLabels;
+        speedChartInstance.data.datasets[0].data = speedHistory;
+        speedChartInstance.update('none');
+        
+        // Update live stats
+        const maxSpeed = speedHistory.length ? Math.max(...speedHistory) : 0;
+        const avgSpeed = speedHistory.length ? (speedHistory.reduce((a,b)=>a+b,0)/speedHistory.length).toFixed(1) : 0;
+        document.getElementById('maxSpeedVal').innerHTML = Math.round(maxSpeed);
+        document.getElementById('avgSpeedVal').innerHTML = avgSpeed;
+        document.getElementById('liveMaxChip').innerHTML = `⚡ MAX: ${Math.round(maxSpeed)} km/h`;
+        document.getElementById('liveAvgChip').innerHTML = `📈 AVG: ${avgSpeed} km/h`;
+    }
+
+    function updateTripMetrics(speed, lat, lng, timestamp) {
+        if (!tripStartTime) tripStartTime = timestamp;
+        if (lastLatLng && lat && lng) {
+            const dist = haversineKm(lastLatLng.lat, lastLatLng.lng, lat, lng);
+            if (dist < 0.5) totalDistance += dist;
+        }
+        lastLatLng = { lat, lng };
+        const durationMin = tripStartTime ? (new Date(timestamp) - new Date(tripStartTime)) / 60000 : 0;
+        document.getElementById('distanceVal').innerHTML = totalDistance.toFixed(1);
+        document.getElementById('timeVal').innerHTML = Math.floor(durationMin);
+    }
+
+    function haversineKm(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+        return R * 2 * Math.asin(Math.sqrt(a));
     }
 
     // ── Map & state ──────────────────────────────────────────────────────────
@@ -283,23 +432,17 @@
     function updateSavedRoutesPanel() {
         const panel = document.getElementById('savedRoutesPanel');
         if (!savedRoutes.length) {
-            panel.innerHTML = '<div style="text-align:center;color:#b09ab4">NO SAVED ROUTES</div>';
+            panel.innerHTML = '<div style="text-align:center;color:#8a7a9e">NO SAVED ROUTES</div>';
             return;
         }
         panel.innerHTML = savedRoutes.map((route, idx) => `
             <div class="route-item">
-                <div>
-                    <div class="route-name">${route.name}</div>
-                    <div class="route-stats">${route.points.length} points | ${new Date(route.savedAt).toLocaleString()}</div>
-                </div>
-                <div class="route-actions">
-                    <button class="route-btn route-btn-restore" onclick="restoreRoute(${idx})">RESTORE</button>
-                    <button class="route-btn route-btn-delete"  onclick="deleteRoute(${idx})">DELETE</button>
-                </div>
+                <div><div class="route-name">${route.name}</div><div class="route-stats">${route.points.length} points | ${new Date(route.savedAt).toLocaleString()}</div></div>
+                <div class="route-actions"><button class="route-btn route-btn-restore" onclick="restoreRoute(${idx})">RESTORE</button><button class="route-btn route-btn-delete"  onclick="deleteRoute(${idx})">DELETE</button></div>
             </div>`).join('');
     }
 
-    function saveCurrentRoute() {
+    window.saveCurrentRoute = function() {
         if (!path.length) { alert('No route to save!'); return; }
         const name = `ROUTE_${routeCounter}`;
         savedRoutes.push({ name, points: [...path], savedAt: new Date().toISOString() });
@@ -307,30 +450,23 @@
         persistRoutes();
         updateSavedRoutesPanel();
         alert(`Route "${name}" saved with ${path.length} points!`);
-    }
-
-    function restoreRoute(index) {
+    };
+    window.restoreRoute = function(index) {
         const route = savedRoutes[index];
-        if (confirm(`Load "${route.name}"?`)) {
-            clearMapOnly();
-            path = [...route.points];
-            drawPath();
-        }
-    }
-
-    function deleteRoute(index) {
-        if (confirm(`Delete "${savedRoutes[index].name}"?`)) {
-            savedRoutes.splice(index, 1);
-            persistRoutes();
-            updateSavedRoutesPanel();
-        }
-    }
+        if (confirm(`Load "${route.name}"?`)) { clearMapOnly(); path = [...route.points]; drawPath(); }
+    };
+    window.deleteRoute = function(index) {
+        if (confirm(`Delete "${savedRoutes[index].name}"?`)) { savedRoutes.splice(index,1); persistRoutes(); updateSavedRoutesPanel(); }
+    };
 
     function clearMapOnly() {
         if (polyline) { map.removeLayer(polyline); polyline = null; }
         if (marker)   { map.removeLayer(marker);   marker   = null; }
         path = [];
         document.getElementById('totalPoints').textContent = '0';
+        totalDistance = 0; tripStartTime = null;
+        document.getElementById('distanceVal').innerHTML = '0';
+        document.getElementById('timeVal').innerHTML = '0';
     }
 
     async function clearMapAndServer() {
@@ -340,24 +476,18 @@
         btn.innerHTML = '⏳ CLEARING...';
         btn.disabled = true;
         try {
-            const response = await fetch('/clear', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'car_id=' + CAR_ID
-            });
+            const response = await fetch('/clear', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'car_id=' + CAR_ID });
             if (!response.ok) throw new Error('Server clear failed');
             clearMapOnly();
-            document.getElementById('trajectoryList').innerHTML = '<div style="text-align:center;color:#b09ab4">WAITING FOR DATA...</div>';
-            document.getElementById('latestLat').textContent  = '--';
-            document.getElementById('latestLng').textContent  = '--';
+            document.getElementById('trajectoryList').innerHTML = '<div style="text-align:center;color:#8a7a9e">WAITING FOR DATA...</div>';
+            document.getElementById('latestLat').textContent = '--';
+            document.getElementById('latestLng').textContent = '--';
             document.getElementById('latestTime').textContent = '--';
             document.getElementById('totalPoints').textContent = '0';
-        } catch (e) {
-            alert('❌ Error clearing data: ' + e.message);
-        } finally {
-            btn.innerHTML = orig;
-            btn.disabled = false;
-        }
+            speedHistory = []; chartTimeLabels = [];
+            if(speedChartInstance){ speedChartInstance.data.labels = []; speedChartInstance.data.datasets[0].data = []; speedChartInstance.update(); }
+        } catch (e) { alert('❌ Error clearing data: ' + e.message); } 
+        finally { btn.innerHTML = orig; btn.disabled = false; }
     }
 
     function drawPath() {
@@ -367,115 +497,102 @@
         marker = L.marker([last[0], last[1]]).addTo(map);
         marker.bindPopup(`<b>CURRENT POSITION</b><br>Lat: ${last[0].toFixed(6)}<br>Lng: ${last[1].toFixed(6)}`);
         if (polyline) map.removeLayer(polyline);
-        polyline = L.polyline(path, { color: '#9caf8c', weight: 3, opacity: 0.8 }).addTo(map);
-        map.setView([last[0], last[1]], 15);
+        polyline = L.polyline(path, { color: '#9ab86a', weight: 3, opacity: 0.8 }).addTo(map);
+        map.setView([last[0], last[1]], 14);
     }
 
     function initMap() {
         map = L.map('map').setView([36.897028, 7.756056], 14);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OSM & CartoDB', subdomains: 'abcd', maxZoom: 19
-        }).addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OSM & CartoDB', subdomains: 'abcd', maxZoom: 19 }).addTo(map);
     }
 
-    // ── GPS fetch — always passes car_id ────────────────────────────────────
+    // ── GPS fetch + Speed update ────────────────────────────────────────────
     async function fetchGPS() {
         if (!autoRefreshEnabled) return;
         try {
             const response = await fetch('/gps?car_id=' + CAR_ID);
-            const data     = await response.json();
+            const data = await response.json();
             if (data.length > 0) {
                 const latest = data[data.length - 1];
-                document.getElementById('latestLat').textContent   = latest.lat.toFixed(6);
-                document.getElementById('latestLng').textContent   = latest.lng.toFixed(6);
-                document.getElementById('latestTime').textContent  = new Date(latest.time).toLocaleString();
+                document.getElementById('latestLat').textContent = latest.lat.toFixed(6);
+                document.getElementById('latestLng').textContent = latest.lng.toFixed(6);
+                document.getElementById('latestTime').textContent = new Date(latest.time).toLocaleString();
                 document.getElementById('totalPoints').textContent = data.length;
                 path = data.map(p => [p.lat, p.lng]);
                 drawPath();
                 const last10 = data.slice(-10).reverse();
-                document.getElementById('trajectoryList').innerHTML = last10.map(p =>
-                    `<div class="trajectory-item">[${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}]
-                     <span style="float:right">${new Date(p.time).toLocaleTimeString()}</span></div>`
-                ).join('');
+                document.getElementById('trajectoryList').innerHTML = last10.map(p => `<div class="trajectory-item">[${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}] <span style="float:right">${new Date(p.time).toLocaleTimeString()}</span></div>`).join('');
+                // Update trip distance & chart speed (if OBD2 speed not available, use GPS speed derived)
             }
         } catch (e) { console.error('GPS fetch error:', e); }
     }
 
-    // ── OBD2 fetch — always passes car_id ───────────────────────────────────
     async function fetchOBD2() {
         if (!autoRefreshEnabled) return;
         try {
             const response = await fetch('/obd2?car_id=' + CAR_ID);
-            const data     = await response.json();
-
+            const data = await response.json();
             if (data.error) {
-                document.getElementById('statusBadge').textContent  = '[ AWAITING DATA ]';
-                document.getElementById('statusBadge').className    = 'status-badge status-offline';
+                document.getElementById('statusBadge').textContent = '[ AWAITING DATA ]';
+                document.getElementById('statusBadge').className = 'status-badge status-offline';
                 return;
             }
-
             document.getElementById('statusBadge').textContent = '[ ACTIVE ]';
-            document.getElementById('statusBadge').className   = 'status-badge status-online';
+            document.getElementById('statusBadge').className = 'status-badge status-online';
 
-            const fmt = (v, u) => v !== undefined && v !== null && v !== -1
-                ? `${v}<span class="metric-unit">${u}</span>` : '--';
-
-            document.getElementById('rpm').innerHTML      = data.rpm > 0 ? data.rpm : '--';
-            document.getElementById('speed').innerHTML    = fmt(data.speed,    ' KM/H');
-            document.getElementById('coolant').innerHTML  = fmt(data.coolant,  ' °C');
-            document.getElementById('load').innerHTML     = fmt(data.load,     ' %');
-            document.getElementById('throttle').innerHTML = fmt(data.throttle, ' %');
-            document.getElementById('battery').innerHTML  = fmt(data.batt,     ' V');
-            document.getElementById('fuel').innerHTML     = fmt(data.fuel,     ' %');
-            document.getElementById('maf').innerHTML      = fmt(data.maf,      ' G/S');
-            document.getElementById('fuelCons').innerHTML = data.fuel_consumption
-                ? `${data.fuel_consumption}<span class="metric-unit"> L/100KM</span>` : '--';
-            document.getElementById('co2').innerHTML      = data.co2_g_per_km
-                ? `${data.co2_g_per_km}<span class="metric-unit"> G/KM</span>` : '--';
-
-            document.getElementById('rpmBar').style.width   = Math.min(100, (data.rpm   || 0) / 80)  + '%';
-            document.getElementById('speedBar').style.width = Math.min(100, (data.speed || 0) / 2)   + '%';
-            document.getElementById('co2Bar').style.width   = Math.min(100, (data.co2_g_per_km || 0) / 3) + '%';
+            const speed = data.speed || 0;
+            document.getElementById('speed').innerHTML = `${speed}<span class="metric-unit"> KM/H</span>`;
+            document.getElementById('rpm').innerHTML = data.rpm || '--';
+            document.getElementById('coolant').innerHTML = data.coolant ? `${data.coolant}<span class="metric-unit"> °C</span>` : '--';
+            document.getElementById('load').innerHTML = data.load ? `${data.load}<span class="metric-unit"> %</span>` : '--';
+            document.getElementById('throttle').innerHTML = data.throttle ? `${data.throttle}<span class="metric-unit"> %</span>` : '--';
+            document.getElementById('battery').innerHTML = data.batt ? `${data.batt}<span class="metric-unit"> V</span>` : '--';
+            document.getElementById('fuel').innerHTML = data.fuel ? `${data.fuel}<span class="metric-unit"> %</span>` : '--';
+            document.getElementById('maf').innerHTML = data.maf ? `${data.maf}<span class="metric-unit"> G/S</span>` : '--';
+            document.getElementById('fuelCons').innerHTML = data.fuel_consumption ? `${data.fuel_consumption}<span class="metric-unit"> L/100KM</span>` : '--';
+            document.getElementById('co2').innerHTML = data.co2_g_per_km ? `${data.co2_g_per_km}<span class="metric-unit"> G/KM</span>` : '--';
+            
+            document.getElementById('rpmBar').style.width = Math.min(100, (data.rpm || 0) / 80) + '%';
+            document.getElementById('speedBar').style.width = Math.min(100, (speed || 0) / 2) + '%';
+            document.getElementById('co2Bar').style.width = Math.min(100, (data.co2_g_per_km || 0) / 3) + '%';
+            
+            // Update speed profile chart with real OBD2 speed
+            if (speed !== undefined && speed !== null) {
+                const now = new Date();
+                updateSpeedChart(speed, now);
+                if (lastLatLng) updateTripMetrics(speed, lastLatLng.lat, lastLatLng.lng, now);
+            }
         } catch (e) { console.error('OBD2 fetch error:', e); }
     }
 
     function stopAutoRefresh() {
         autoRefreshEnabled = false;
-        clearInterval(gpsInterval);
-        clearInterval(obd2Interval);
+        clearInterval(gpsInterval); clearInterval(obd2Interval);
         document.getElementById('statusBadge').textContent = '[ PAUSED ]';
-        document.getElementById('statusBadge').className   = 'status-badge status-offline';
+        document.getElementById('statusBadge').className = 'status-badge status-offline';
     }
-
     function startAutoRefresh() {
         if (autoRefreshEnabled) return;
         autoRefreshEnabled = true;
-        clearInterval(gpsInterval);
-        clearInterval(obd2Interval);
-        gpsInterval  = setInterval(fetchGPS,  3000);
+        clearInterval(gpsInterval); clearInterval(obd2Interval);
+        gpsInterval = setInterval(fetchGPS, 3000);
         obd2Interval = setInterval(fetchOBD2, 2000);
         fetchGPS(); fetchOBD2();
     }
+    function clearAllRoutes() { if (confirm('Delete ALL saved routes?')) { savedRoutes = []; routeCounter = 1; persistRoutes(); updateSavedRoutesPanel(); } }
 
-    function clearAllRoutes() {
-        if (confirm('Delete ALL saved routes?')) {
-            savedRoutes = []; routeCounter = 1;
-            persistRoutes(); updateSavedRoutesPanel();
-        }
-    }
-
-    document.getElementById('saveRouteBtn').addEventListener('click',      saveCurrentRoute);
-    document.getElementById('clearMapBtn').addEventListener('click',       clearMapAndServer);
+    document.getElementById('saveRouteBtn').addEventListener('click', saveCurrentRoute);
+    document.getElementById('clearMapBtn').addEventListener('click', clearMapAndServer);
     document.getElementById('stopAutoRefreshBtn').addEventListener('click', stopAutoRefresh);
     document.getElementById('startAutoRefreshBtn').addEventListener('click', startAutoRefresh);
     document.getElementById('clearAllRoutesBtn').addEventListener('click', clearAllRoutes);
 
     initMap();
+    initSpeedChart();
     loadSavedRoutes();
-    gpsInterval  = setInterval(fetchGPS,  3000);
+    gpsInterval = setInterval(fetchGPS, 3000);
     obd2Interval = setInterval(fetchOBD2, 2000);
-    fetchGPS();
-    fetchOBD2();
+    fetchGPS(); fetchOBD2();
 </script>
 </body>
 </html>
