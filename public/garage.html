@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FLEET COMMAND — Vehicle Management</title>
+<title>FLEET COMMAND — OFFLINE MODE</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -43,7 +43,7 @@ body{
   padding-bottom:8px;font-weight:600;
   display:flex;justify-content:space-between;align-items:center;
 }
-.card h3 span{color:#7c9f6c;font-size:.7rem}
+.card h3 span{color:#c08a8a;font-size:.7rem}
 
 /* ── Fleet map ── */
 #fleetMap{height:420px;border-radius:6px;overflow:hidden;border:1px solid #d0c0d8}
@@ -72,7 +72,7 @@ body{
   font-family:'Share Tech Mono',monospace;font-size:.55rem;
   color:#a08aa4;letter-spacing:2px;margin-top:4px;
 }
-.summary-tile.online  .st-val{color:#6a9a6a}
+.summary-tile.online  .st-val{color:#c08a8a}      /* offline style forced */
 .summary-tile.offline .st-val{color:#c08a8a}
 
 /* ── Garage grid ── */
@@ -82,7 +82,7 @@ body{
   gap:16px;
 }
 
-/* ── Saved car card ── */
+/* ── Saved car card (all offline) ── */
 .car-card{
   background:#faf5fa;border:1px solid #d8c8e0;
   border-radius:8px;padding:20px;cursor:pointer;
@@ -90,15 +90,16 @@ body{
 }
 .car-card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,#9caf8c,#b08fc0);
+  background:linear-gradient(90deg,#c08a8a,#b08fc0);
   opacity:0;transition:opacity .25s;
 }
 .car-card:hover{border-color:#c0a8c8;transform:translateY(-2px);box-shadow:0 8px 24px rgba(106,74,110,.1)}
 .car-card:hover::before{opacity:1}
-.car-card.online-card{border-color:rgba(106,154,106,.3)}
-.car-card.online-card::before{opacity:1;background:linear-gradient(90deg,#7caf8c,#7c9f6c)}
+/* offline card styling (no online variant) */
+.car-card.offline-card{border-color:rgba(192,138,138,.4);}
+.car-card.offline-card::before{opacity:1;background:linear-gradient(90deg,#c08a8a,#c08a8a);}
 
-.car-make{font-size:.6rem;letter-spacing:3px;color:#7c9f6c;margin-bottom:4px;font-family:'Share Tech Mono',monospace}
+.car-make{font-size:.6rem;letter-spacing:3px;color:#c08a8a;margin-bottom:4px;font-family:'Share Tech Mono',monospace}
 .car-model{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:#5a3d5c;margin-bottom:14px;letter-spacing:1px}
 .car-specs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .spec{background:#f0e8f0;border-radius:4px;padding:6px 8px;border:1px solid #e0d0e8}
@@ -106,13 +107,13 @@ body{
 .spec-val{font-size:.8rem;color:#6a4a6e;font-weight:600;margin-top:2px;font-family:'Share Tech Mono',monospace}
 .car-co2{
   margin-top:14px;padding:8px;border-radius:4px;
-  background:rgba(124,159,108,.1);border:1px solid rgba(124,159,108,.2);
+  background:rgba(192,138,138,.08);border:1px solid rgba(192,138,138,.2);
   display:flex;justify-content:space-between;align-items:center;
 }
 .co2-label{font-size:.55rem;letter-spacing:2px;color:#a08aa4;font-family:'Share Tech Mono',monospace}
-.co2-val{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;color:#6a8a5a}
+.co2-val{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;color:#c08a8a}
 
-/* ── Connection status badge ── */
+/* ── Connection status badge (offline forced) ── */
 .conn-badge{
   display:inline-flex;align-items:center;gap:5px;
   padding:3px 8px;border-radius:3px;font-size:.55rem;
@@ -120,12 +121,14 @@ body{
   margin-bottom:10px;
 }
 .conn-badge .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.conn-online{background:rgba(106,154,106,.1);color:#6a9a6a;border:1px solid rgba(106,154,106,.25)}
-.conn-online .dot{background:#6a9a6a}
-.conn-offline{background:rgba(192,138,138,.1);color:#c08a8a;border:1px solid rgba(192,138,138,.2)}
-.conn-offline .dot{background:#c08a8a;opacity:.6}
+.conn-offline{
+  background:rgba(192,138,138,.15);
+  color:#c08a8a;
+  border:1px solid rgba(192,138,138,.3);
+}
+.conn-offline .dot{background:#c08a8a;opacity:0.8}
 
-/* ── Device ID badge ── */
+/* ── Device ID row unchanged but offline friendly ── */
 .device-id-row{
   margin-top:10px;padding:7px 10px;border-radius:4px;
   background:rgba(176,143,192,.08);border:1px solid rgba(176,143,192,.2);
@@ -159,7 +162,7 @@ body{
 }
 .empty-garage p{font-size:.7rem;letter-spacing:2px;margin-top:8px}
 
-/* ── Add car panel ── */
+/* ── Add car panel (unchanged) ── */
 .search-row{position:relative;margin-bottom:20px}
 .search-input{
   width:100%;background:#faf5fa;border:1px solid #d8c8e0;border-radius:6px;
@@ -228,7 +231,6 @@ body{
 .add-btn.ready{opacity:1;pointer-events:all}
 .add-btn.ready:hover{background:#9caf8c;transform:translateY(-1px)}
 
-/* fuel badges */
 .fuel-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:.55rem;letter-spacing:1px;font-family:'Share Tech Mono',monospace}
 .fuel-X{background:rgba(106,154,106,.1);color:#6a9a6a;border:1px solid rgba(106,154,106,.2)}
 .fuel-Z{background:rgba(176,143,192,.1);color:#b08fc0;border:1px solid rgba(176,143,192,.2)}
@@ -260,10 +262,10 @@ body{
 
   <div class="header">
     <h1>FLEET COMMAND</h1>
-    <p>MULTI-VEHICLE MONITORING &amp; MANAGEMENT SYSTEM</p>
+    <p>OFFLINE MODE — ALL UNITS DISCONNECTED</p>
   </div>
 
-  <!-- Fleet summary strip -->
+  <!-- Fleet summary strip: forced offline values -->
   <div class="fleet-summary" id="fleetSummary">
     <div class="summary-tile"><div class="st-val" id="sumTotal">0</div><div class="st-label">TOTAL UNITS</div></div>
     <div class="summary-tile online"><div class="st-val" id="sumOnline">0</div><div class="st-label">CONNECTED</div></div>
@@ -271,12 +273,11 @@ body{
     <div class="summary-tile"><div class="st-val" id="sumPct">—</div><div class="st-label">FLEET ONLINE %</div></div>
   </div>
 
-  <!-- Live fleet map -->
+  <!-- Live fleet map (all markers shown as offline) -->
   <div class="card">
-    <h3>[ LIVE FLEET MAP ] <span id="mapStatus">LOADING...</span></h3>
+    <h3>[ LIVE FLEET MAP ] <span id="mapStatus">OFFLINE MODE</span></h3>
     <div id="fleetMap"></div>
     <div class="map-legend">
-      <div class="legend-item"><span class="legend-dot" style="background:#6a9a6a"></span>CONNECTED — LAST GPS KNOWN</div>
       <div class="legend-item"><span class="legend-dot" style="background:#c08a8a;opacity:.7"></span>OFFLINE — LAST KNOWN POSITION</div>
       <div class="legend-item"><span class="legend-dot" style="background:#b09ab4"></span>OFFLINE — NO GPS DATA</div>
     </div>
@@ -360,11 +361,10 @@ body{
 <script>
 let allCars = [], filteredCars = [], selectedCar = null;
 let garage  = JSON.parse(localStorage.getItem('garage') || '[]');
-let activeDeviceIds = new Set();
 
 const FUEL_LABELS = {X:'Regular',Z:'Premium',D:'Diesel',E:'Ethanol',N:'Natural Gas'};
 
-// ── Leaflet fleet map ─────────────────────────────────────────────────────────
+// ── Leaflet fleet map (offline markers only) ───────────────────────────────
 let fleetMap, markers = {};
 
 function initFleetMap() {
@@ -374,16 +374,15 @@ function initFleetMap() {
   }).addTo(fleetMap);
 }
 
-function makeMarkerIcon(online) {
-  const color = online ? '#6a9a6a' : '#c08a8a';
-  const opacity = online ? 1 : 0.6;
+// OFFLINE ONLY marker icon (always grey-red, semi-transparent)
+function makeOfflineMarkerIcon() {
   return L.divIcon({
     className: '',
     html: `<div style="
       width:14px;height:14px;border-radius:50%;
-      background:${color};opacity:${opacity};
-      border:2px solid ${online ? '#fff' : '#ccc'};
-      box-shadow:0 0 ${online ? '8px ' + color : '0 #000'};
+      background:#c08a8a;opacity:0.7;
+      border:2px solid #e0b0b0;
+      box-shadow:0 0 2px #b07070;
     "></div>`,
     iconSize: [14, 14],
     iconAnchor: [7, 7],
@@ -391,67 +390,88 @@ function makeMarkerIcon(online) {
   });
 }
 
-// Fetch latest GPS for all garage cars and place/update markers
+// Fetch GPS for each car but force offline status presentation.
 async function updateFleetMap() {
-  let onlineCount = 0, offlineCount = 0, positioned = [];
-
+  // Always treat connected = 0, offline = garage.length
+  const totalUnits = garage.length;
+  const connected = 0;
+  const offline = totalUnits;
+  
+  // Update summary numbers: CONNECTED always 0, OFFLINE always total
+  document.getElementById('sumTotal').textContent = totalUnits;
+  document.getElementById('sumOnline').textContent = "0";
+  document.getElementById('sumOffline').textContent = totalUnits;
+  document.getElementById('sumPct').textContent = totalUnits ? "0%" : "—";
+  document.getElementById('mapStatus').textContent = "0 ONLINE · " + totalUnits + " OFFLINE (SIMULATED)";
+  
+  // For each garage vehicle, fetch GPS if possible but force offline marker style
+  let positioned = [];
+  
   for (const car of garage) {
     const id = car.device_id || 'default';
-    const isOnline = activeDeviceIds.has(id);
-    isOnline ? onlineCount++ : offlineCount++;
-
     try {
-      const r    = await fetch('/gps?car_id=' + id);
-      const pts  = await r.json();
-      const last = pts.length ? pts[pts.length - 1] : null;
-
-      const label = car.nickname || car.model;
+      // Try to fetch GPS from the mock server, but if fails we still handle gracefully
+      const r = await fetch('/gps?car_id=' + id);
+      let pts = [];
+      try {
+        pts = await r.json();
+      } catch(e) { pts = []; }
+      const last = pts && pts.length ? pts[pts.length - 1] : null;
+      
       const popup = `
-        <b>${car.make} ${label}</b><br>
+        <b>${car.make} ${car.nickname || car.model}</b><br>
         ID: ${id}<br>
-        Status: <span style="color:${isOnline ? '#6a9a6a' : '#c08a8a'}">${isOnline ? 'CONNECTED' : 'OFFLINE'}</span><br>
-        ${last ? `Lat: ${last.lat.toFixed(5)}<br>Lng: ${last.lng.toFixed(5)}<br>Last seen: ${new Date(last.time).toLocaleTimeString()}` : 'No GPS data'}
+        Status: <span style="color:#c08a8a">OFFLINE (SIMULATED)</span><br>
+        ${last ? `Lat: ${last.lat.toFixed(5)}<br>Lng: ${last.lng.toFixed(5)}<br>Last known: ${new Date(last.time).toLocaleTimeString()}` : 'No GPS data available'}
       `;
-
+      
       if (last) {
         positioned.push([last.lat, last.lng]);
         if (markers[id]) {
           markers[id].setLatLng([last.lat, last.lng]);
-          markers[id].setIcon(makeMarkerIcon(isOnline));
+          markers[id].setIcon(makeOfflineMarkerIcon());
           markers[id].getPopup().setContent(popup);
         } else {
-          markers[id] = L.marker([last.lat, last.lng], { icon: makeMarkerIcon(isOnline) })
+          markers[id] = L.marker([last.lat, last.lng], { icon: makeOfflineMarkerIcon() })
             .addTo(fleetMap)
             .bindPopup(popup);
         }
       } else {
-        if (markers[id]) {
-          markers[id].setIcon(makeMarkerIcon(false));
+        // No GPS data: still offline marker with different note
+        if (!markers[id]) {
+          // we can't set a position without coordinates, skip or use default? we'll ignore
+        } else {
+          markers[id].setIcon(makeOfflineMarkerIcon());
           markers[id].getPopup().setContent(popup);
         }
       }
-    } catch(e) { /* GPS unreachable for this car */ }
+    } catch(e) {
+      // If GPS endpoint fails, we don't add marker but we keep existing ones offline styled
+      if (markers[id]) {
+        markers[id].setIcon(makeOfflineMarkerIcon());
+        markers[id].getPopup().setContent(`
+          <b>${car.make} ${car.nickname || car.model}</b><br>
+          ID: ${id}<br>
+          Status: <span style="color:#c08a8a">OFFLINE</span><br>
+          GPS signal lost / unavailable
+        `);
+      }
+    }
   }
-
+  
+  // Remove markers for cars that no longer exist
   const currentIds = new Set(garage.map(c => c.device_id || 'default'));
   for (const id of Object.keys(markers)) {
     if (!currentIds.has(id)) { fleetMap.removeLayer(markers[id]); delete markers[id]; }
   }
-
+  
+  // Adjust map view if we have positioned points
   if (positioned.length > 0) {
     fleetMap.fitBounds(positioned.length === 1
       ? L.latLng(positioned[0]).toBounds(5000)
       : L.latLngBounds(positioned).pad(0.2)
     );
   }
-
-  document.getElementById('sumTotal').textContent   = garage.length;
-  document.getElementById('sumOnline').textContent  = onlineCount;
-  document.getElementById('sumOffline').textContent = offlineCount;
-  document.getElementById('sumPct').textContent     = garage.length
-    ? Math.round(onlineCount / garage.length * 100) + '%' : '—';
-  document.getElementById('mapStatus').textContent  =
-    onlineCount + ' ONLINE · ' + offlineCount + ' OFFLINE';
 }
 
 // ── Load dataset ─────────────────────────────────────────────────────────────
@@ -461,30 +481,21 @@ async function loadDataset() {
     allCars  = await r.json();
     populateMakes();
     renderGarage();
-  } catch(e) { console.error('Could not load cars_dataset.json', e); }
-}
-
-// ── Poll server for active device IDs ────────────────────────────────────────
-async function pollDevices() {
-  try {
-    const r    = await fetch('/devices');
-    const devs = await r.json();
-    activeDeviceIds = new Set(devs);
-    renderGarage();
     updateFleetMap();
-  } catch(e) { /* server unreachable */ }
+  } catch(e) { console.error('Could not load cars_dataset.json', e); }
 }
 
 function populateMakes() {
   const makes = [...new Set(allCars.map(c=>c.make))].sort();
   const sel   = document.getElementById('selMake');
+  sel.innerHTML = '<option value="">— SELECT MAKE —</option>';
   makes.forEach(m => {
     const o = document.createElement('option');
     o.value = m; o.textContent = m; sel.appendChild(o);
   });
 }
 
-// ── Cascading selects ────────────────────────────────────────────────────────
+// ── Cascading selects (unchanged) ─────────────────────────────────────────
 document.getElementById('selMake').onchange = function() {
   resetFrom('model');
   if (!this.value) return;
@@ -543,7 +554,7 @@ function resetFrom(level) {
   }
 }
 
-// ── Search ───────────────────────────────────────────────────────────────────
+// search and preview unchanged
 document.getElementById('searchInput').addEventListener('input', function() {
   const q=this.value.trim().toUpperCase();
   const list=document.getElementById('resultsList');
@@ -588,7 +599,6 @@ function selectFromSearch(i) {
   document.getElementById('searchInput').value=car.make+' '+car.model;
 }
 
-// ── Preview ──────────────────────────────────────────────────────────────────
 function showPreview(car) {
   selectedCar=car;
   document.getElementById('previewTitle').textContent=car.make+' '+car.model;
@@ -609,7 +619,6 @@ function hidePreview(){
   document.getElementById('addBtn').classList.remove('ready');
 }
 
-// ── Garage ───────────────────────────────────────────────────────────────────
 function makeDeviceId() {
   return 'CAR-' + Math.floor(Math.random()*0x10000).toString(16).toUpperCase().padStart(4,'0');
 }
@@ -655,14 +664,14 @@ function renderGarage() {
     grid.innerHTML='<div class="empty-garage"><p>NO UNITS REGISTERED YET</p><p>ADD A VEHICLE BELOW TO GET STARTED</p></div>';
     return;
   }
+  // force offline badge for every car
   grid.innerHTML=garage.map(car=>{
     const devId  = car.device_id || '';
-    const online = activeDeviceIds.has(devId);
-    const badgeHtml = `<div class="conn-badge ${online ? 'conn-online' : 'conn-offline'}">
-      <span class="dot"></span>${online ? 'CONNECTED' : 'OFFLINE'}
+    const badgeHtml = `<div class="conn-badge conn-offline">
+      <span class="dot"></span>OFFLINE
     </div>`;
     return `
-    <div class="car-card ${online ? 'online-card' : ''}" onclick="openDashboard(${JSON.stringify(car).replace(/"/g,'&quot;')})">
+    <div class="car-card offline-card" onclick="openDashboard(${JSON.stringify(car).replace(/"/g,'&quot;')})">
       <button class="delete-btn" onclick="deleteCar(${car.id},event)">✕</button>
       ${badgeHtml}
       <div class="car-make">${car.make}</div>
@@ -686,10 +695,10 @@ function renderGarage() {
   }).join('');
 }
 
+// Start system: map, dataset, and periodic map refresh (no polling for online devices)
 initFleetMap();
 loadDataset();
-pollDevices();
-setInterval(pollDevices, 10000);
+setInterval(() => { updateFleetMap(); }, 15000);
 </script>
 </body>
 </html>
