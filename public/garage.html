@@ -381,8 +381,8 @@ let fleetMap, markers = {};
 
 function initFleetMap() {
   fleetMap = L.map('fleetMap').setView([36.897028, 7.756056], 5);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OSM & CartoDB | Deep Mode', subdomains: 'abcd', maxZoom: 19
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 19
   }).addTo(fleetMap);
 }
 
