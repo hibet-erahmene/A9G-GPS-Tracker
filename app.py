@@ -223,83 +223,6 @@ def car_id_from_request(req) -> str:
         cid = req.args.get("car_id", "").strip()
     return cid if cid else "default"
 
-# ── Shared processing (used by /gps and /obd2) ───────────────────────────────
-OBD2_KEYS = ("rpm", "speed", "maf", "coolant", "load")
-
-def handle_gps_data(state: dict, car_id: str, lat: float, lng: float):
-    now_s = now_utc().isoformat()
-    state["gps_log"].append({"lat": lat, "lng": lng, "time": now_s})
-    if len(state["gps_log"]) > 500:
-        state["gps_log"].pop(0)
-
-    trip = state["trip"]
-    if not trip["active"] and not state["obd2_data"].get("error"):
-        trip.update({
-            "active": True, "start_time": now_s,
-            "last_gps": {"lat": lat, "lng": lng},
-            "gps_stable_since": now_s,
-        })
-        print(f"[TRIP] [{car_id}] Started")
-
-    if trip["active"]:
-        last = trip.get("last_gps")
-        if last and haversine_m(last["lat"], last["lng"], lat, lng) > 20:
-            trip["gps_stable_since"] = None
-            trip["last_gps"]         = {"lat": lat, "lng": lng}
-        elif trip["gps_stable_since"] is None:
-            trip["gps_stable_since"] = now_s
-
-
-def handle_obd2_data(state: dict, car_id: str, data):
-    """Stores OBD2 values. Returns (co2_live, fuel_L100)."""
-    now_s = now_utc().isoformat()
-    trip  = state["trip"]
-
-    interval_s = 0.0
-    if trip["last_obd2_time"]:
-        interval_s = min(60.0, (
-            datetime.fromisoformat(now_s) -
-            datetime.fromisoformat(trip["last_obd2_time"])
-        ).total_seconds())
-    trip["last_obd2_time"] = now_s
-
-    state["obd2_data"] = {
-        "rpm":      int(float(data.get("rpm",      0))),
-        "speed":    int(float(data.get("speed",    0))),
-        "coolant":  int(float(data.get("coolant",  0))),
-        "iat":      int(float(data.get("iat",      0))),
-        "load":     round(float(data.get("load",   0)), 1),
-        "throttle": round(float(data.get("throttle", 0)), 1),
-        "map":      int(float(data.get("map",      0))),
-        "maf":      round(float(data.get("maf",    0)), 2),
-        "fuel":     round(float(data.get("fuel",   0)), 1),
-        "batt":     round(float(data.get("batt",   0)), 2),
-        "last_update": now_s,
-        "car_id":   car_id,
-    }
-    obd2 = state["obd2_data"]
-
-    fuel_L100 = maf_to_fuel_L100(obd2["maf"], obd2["speed"])
-    obd2["fuel_consumption"] = fuel_L100
-
-    car      = trip["car"]
-    co2_live = predict_co2(
-        float(data.get("engine_size",  car.get("engine_size",  2.0))),
-        int(data.get("cylinders",      car.get("cylinders",    4))),
-        fuel_L100 or 9.0,
-        data.get("fuel_type",          car.get("fuel_type",    "X")),
-        data.get("transmission",       car.get("transmission", "A6")),
-        data.get("make_type",          car.get("make_type",    "General")),
-        data.get("vehicle_class",      car.get("vehicle_class","Sedan")),
-    ) if fuel_L100 else None
-    obd2["co2_g_per_km"] = co2_live
-
-    if trip["active"] and interval_s > 0:
-        trip["fuel_samples"].append((maf_to_L_per_s(obd2["maf"]), interval_s))
-
-    print(f"[OBD2] [{car_id}] spd={obd2['speed']} maf={obd2['maf']} co2={co2_live}")
-    return co2_live, fuel_L100
-
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.route("/")
@@ -324,8 +247,7 @@ def list_devices():
         if ls and (now - datetime.fromisoformat(ls)).total_seconds() <= TIMEOUT_S:
             active.append(car_id)
     return jsonify(active)
-
-
+    
 @app.route("/gps", methods=["GET","POST"])
 def gps_handler():
     car_id = car_id_from_request(request)
@@ -340,24 +262,32 @@ def gps_handler():
     lat, lng = data.get("lat"), data.get("lng")
     if lat is None or lng is None:
         return jsonify({"error": "missing lat/lng"}), 400
-    try:
-        lat, lng = float(lat), float(lng)
-    except ValueError:
-        return jsonify({"error": "bad lat/lng"}), 400
 
-    result = {"ok": True, "car_id": car_id}
+    lat, lng = float(lat), float(lng)
+    now_s    = now_utc().isoformat()
+    entry    = {"lat": lat, "lng": lng, "time": now_s}
+    state["gps_log"].append(entry)
+    if len(state["gps_log"]) > 500:
+        state["gps_log"].pop(0)
 
-    # Combined mode: OBD2 fields sent together with GPS (OBD first, so the trip can start)
-    if any(k in data for k in OBD2_KEYS):
-        try:
-            co2_live, fuel_L100 = handle_obd2_data(state, car_id, data)
-            result.update({"co2_g_per_km": co2_live, "fuel_L100": fuel_L100})
-        except Exception as e:
-            print(f"[OBD2] [{car_id}] combined error: {e}")
-            result["obd2_error"] = str(e)
+    trip = state["trip"]
+    if not trip["active"] and not state["obd2_data"].get("error"):
+        trip.update({
+            "active": True, "start_time": now_s,
+            "last_gps": {"lat": lat, "lng": lng},
+            "gps_stable_since": now_s,
+        })
+        print(f"[TRIP] [{car_id}] Started")
 
-    handle_gps_data(state, car_id, lat, lng)
-    return jsonify(result), 200
+    if trip["active"]:
+        last = trip.get("last_gps")
+        if last and haversine_m(last["lat"], last["lng"], lat, lng) > 20:
+            trip["gps_stable_since"] = None
+            trip["last_gps"]         = {"lat": lat, "lng": lng}
+        elif trip["gps_stable_since"] is None:
+            trip["gps_stable_since"] = now_s
+
+    return jsonify({"ok": True, "car_id": car_id}), 200
 
 
 @app.route("/obd2", methods=["GET","POST"])
@@ -386,9 +316,57 @@ def obd2_handler():
         data = request.get_json(silent=True) or request.form
         if not data:
             return jsonify({"error": "invalid data"}), 400
-        co2_live, fuel_L100 = handle_obd2_data(state, car_id, data)
+
+        now_s    = now_utc().isoformat()
+        trip     = state["trip"]
+        obd2     = state["obd2_data"]
+
+        interval_s = 0.0
+        if trip["last_obd2_time"]:
+            interval_s = min(60.0, (
+                datetime.fromisoformat(now_s) -
+                datetime.fromisoformat(trip["last_obd2_time"])
+            ).total_seconds())
+        trip["last_obd2_time"] = now_s
+
+        state["obd2_data"] = {
+            "rpm":      int(float(data.get("rpm",      0))),
+            "speed":    int(float(data.get("speed",    0))),
+            "coolant":  int(float(data.get("coolant",  0))),
+            "iat":      int(float(data.get("iat",      0))),
+            "load":     round(float(data.get("load",   0)), 1),
+            "throttle": round(float(data.get("throttle", 0)), 1),
+            "map":      int(float(data.get("map",      0))),
+            "maf":      round(float(data.get("maf",    0)), 2),
+            "fuel":     round(float(data.get("fuel",   0)), 1),
+            "batt":     round(float(data.get("batt",   0)), 2),
+            "last_update": now_s,
+            "car_id":   car_id,
+        }
+        obd2 = state["obd2_data"]
+
+        fuel_L100 = maf_to_fuel_L100(obd2["maf"], obd2["speed"])
+        obd2["fuel_consumption"] = fuel_L100
+
+        car      = trip["car"]
+        co2_live = predict_co2(
+            float(data.get("engine_size",  car.get("engine_size",  2.0))),
+            int(data.get("cylinders",      car.get("cylinders",    4))),
+            fuel_L100 or 9.0,
+            data.get("fuel_type",          car.get("fuel_type",    "X")),
+            data.get("transmission",       car.get("transmission", "A6")),
+            data.get("make_type",          car.get("make_type",    "General")),
+            data.get("vehicle_class",      car.get("vehicle_class","Sedan")),
+        ) if fuel_L100 else None
+        obd2["co2_g_per_km"] = co2_live
+
+        if trip["active"] and interval_s > 0:
+            trip["fuel_samples"].append((maf_to_L_per_s(obd2["maf"]), interval_s))
+
+        print(f"[OBD2] [{car_id}] spd={obd2['speed']} maf={obd2['maf']} co2={co2_live}")
         return jsonify({"ok": True, "car_id": car_id,
                         "co2_g_per_km": co2_live, "fuel_L100": fuel_L100}), 200
+
     except Exception as e:
         print(f"[OBD2] [{car_id}] {e}")
         return jsonify({"error": str(e)}), 400
@@ -442,3 +420,4 @@ def clear_data():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
+
