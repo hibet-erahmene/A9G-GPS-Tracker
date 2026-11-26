@@ -6,3 +6,7 @@ numpy
 requests
 joblib
 statsmodels
+SQLAlchemy
+psycopg2-binary
+argon2-cffi
+flask-limiter
