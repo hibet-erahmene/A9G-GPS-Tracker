@@ -3,371 +3,414 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FLEET COMMAND — FONCEE OFFLINE MODE</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<title>Fleet Command | Garage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
+:root{
+  --green-900:#14372a;
+  --green-800:#1b4a38;
+  --green-700:#236048;
+  --green-600:#2f7a5a;
+  --green-500:#3d9a73;
+  --green-100:#e3f1ea;
+  --green-50:#f1f8f4;
+  --cream:#fdf1e3;
+  --bg:#eaf3ee;
+  --card:#ffffff;
+  --text:#14231c;
+  --muted:#6b7f75;
+  --line:#e1ebe5;
+  --danger:#b94a48;
+  --danger-bg:#f8eaea;
+  --shadow:0 10px 30px rgba(20,55,42,.08);
+  --shadow-sm:0 2px 8px rgba(20,55,42,.06);
+  --radius:18px;
+}
+
 *{margin:0;padding:0;box-sizing:border-box}
 
 body{
-  background:#0a0c14;
-  font-family:'Orbitron',monospace;
+  background:var(--bg);
+  font-family:'Inter',sans-serif;
+  color:var(--text);
   min-height:100vh;
-  padding:20px;
+  padding:24px;
 }
 
-.container{max-width:1400px;margin:0 auto}
+.container{max-width:1760px;margin:0 auto}
 
-/* ── Header ── */
-.header{text-align:center;margin-bottom:30px}
-.header h1{
-  font-family:'Orbitron',monospace;
-  font-size:2.2rem;font-weight:800;
-  letter-spacing:3px;
-  background:linear-gradient(135deg,#c0e0d4,#8ab8b0);
-  -webkit-background-clip:text;
-  background-clip:text;
-  color:transparent;
-  text-shadow:0 0 8px #2a6b5e;
-  margin-bottom:5px;
+.shell{background:#fff;border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
+
+/* ── Navbar ── */
+.navbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 36px;border-bottom:1px solid var(--line);background:#fff;
 }
-.header p{
-  color:#8ab8b0;
-  font-family:'Share Tech Mono',monospace;
-  font-size:.75rem;letter-spacing:2px;
-  text-shadow:0 0 2px #1a4a40;
+.brand{
+  display:flex;align-items:center;gap:10px;
+  font-family:'Poppins',sans-serif;font-weight:700;font-size:1rem;
+  letter-spacing:.5px;color:var(--green-800);
 }
+.brand-mark{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,var(--green-600),var(--green-800));
+  display:grid;place-items:center;color:#fff;
+}
+.brand-mark svg{width:18px;height:18px}
+.nav-tag{
+  font-family:'Poppins',sans-serif;font-size:.75rem;font-weight:500;
+  color:var(--green-700);background:var(--green-100);
+  padding:6px 14px;border-radius:999px;
+}
+
+/* ── Hero ── */
+.hero{
+  padding:44px 36px 28px;
+  background:linear-gradient(180deg,var(--cream) 0%,#fff 100%);
+}
+.hero h1{
+  font-family:'Poppins',sans-serif;font-size:2.4rem;font-weight:700;
+  line-height:1.2;color:var(--green-900);
+}
+.hero h1 span{color:var(--green-600)}
+.hero p{margin-top:10px;color:var(--muted);font-size:.95rem;max-width:560px}
+
+.content{padding:8px 36px 36px}
+
+/* ── Summary tiles ── */
+.fleet-summary{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:14px;margin-bottom:24px;
+}
+.summary-tile{
+  background:var(--green-50);border:1px solid transparent;
+  border-radius:16px;padding:18px 20px;transition:all .2s;
+}
+.summary-tile:hover{border-color:var(--green-500);background:#fff;box-shadow:var(--shadow-sm)}
+.summary-tile .st-val{
+  font-family:'Poppins',sans-serif;font-size:1.9rem;font-weight:700;color:var(--green-900);
+}
+.summary-tile .st-label{
+  font-size:.68rem;text-transform:uppercase;letter-spacing:1.2px;
+  color:var(--muted);font-weight:600;margin-top:4px;
+}
+.summary-tile.online .st-val{color:var(--green-600)}
+.summary-tile.offline .st-val{color:var(--danger)}
 
 /* ── Cards ── */
 .card{
-  background:rgba(10,14,20,0.92);backdrop-filter:blur(8px);
-  border-radius:8px;padding:20px;
-  border:1px solid #2a6a5c;box-shadow:0 8px 20px rgba(0,0,0,0.6);
-  margin-bottom:20px;
+  background:var(--card);border-radius:var(--radius);padding:24px;
+  border:1px solid var(--line);box-shadow:var(--shadow-sm);margin-bottom:24px;
 }
 .card h3{
-  color:#bce8dc;font-size:.85rem;letter-spacing:2px;
-  margin-bottom:15px;border-bottom:1px solid #2a6a5c;
-  padding-bottom:8px;font-weight:600;
   display:flex;justify-content:space-between;align-items:center;
-  text-shadow:0 0 3px #1a5a4a;
+  font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:600;
+  color:var(--green-900);margin-bottom:18px;
 }
-.card h3 span{color:#7ac8a8;font-size:.7rem}
+.card h3 span{font-family:'Inter',sans-serif;font-size:.75rem;font-weight:500;color:var(--muted)}
 
-/* ── Fleet map ── */
-#fleetMap{height:420px;border-radius:6px;overflow:hidden;border:1px solid #2a6a5c;box-shadow:0 0 10px rgba(42,106,92,0.4)}
-
-.map-legend{
-  display:flex;gap:20px;margin-top:10px;
-  font-family:'Share Tech Mono',monospace;font-size:.6rem;color:#90b8ac;letter-spacing:1px;
-}
-.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
+/* ── Map ── */
+#fleetMap{height:420px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.map-legend{display:flex;gap:22px;margin-top:12px;font-size:.75rem;color:var(--muted);flex-wrap:wrap}
 .legend-item{display:flex;align-items:center}
-
-/* ── Fleet summary strip ── */
-.fleet-summary{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:12px;margin-bottom:20px;
-}
-.summary-tile{
-  background:rgba(10,14,20,0.88);border:1px solid #2a6a5c;
-  border-radius:8px;padding:14px 16px;text-align:center;
-  transition:all .2s;
-}
-.summary-tile:hover{border-color:#5ac0aa;box-shadow:0 0 12px rgba(90,192,170,0.2)}
-.summary-tile .st-val{
-  font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:800;
-  color:#c8f0e4;letter-spacing:2px;text-shadow:0 0 4px #1a6a58;
-}
-.summary-tile .st-label{
-  font-family:'Share Tech Mono',monospace;font-size:.55rem;
-  color:#90b8ac;letter-spacing:2px;margin-top:4px;
-}
-.summary-tile.online  .st-val{color:#7ac8a8}
-.summary-tile.offline .st-val{color:#e09a9a}
+.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px;flex-shrink:0}
 
 /* ── Garage grid ── */
 .garage-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:16px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;
 }
 
-/* ── Saved car card (offline style deep) ── */
 .car-card{
-  background:#0c121c;border:1px solid #2a5a4e;
-  border-radius:8px;padding:20px;cursor:pointer;
-  transition:all .25s;position:relative;overflow:hidden;
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:20px;cursor:pointer;position:relative;overflow:hidden;
+  transition:all .25s;box-shadow:var(--shadow-sm);
 }
 .car-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,#e09a9a,#5ac0aa);
-  opacity:0;transition:opacity .25s;
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--danger),#d98c8a);
 }
-.car-card:hover{border-color:#5ac0aa;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.4)}
-.car-card:hover::before{opacity:1}
-.car-card.offline-card{border-color:#3a5a50;}
-.car-card.offline-card::before{opacity:1;background:linear-gradient(90deg,#e09a9a,#c07a7a);}
+.car-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--green-500)}
 
-.car-make{font-size:.6rem;letter-spacing:3px;color:#e09a9a;margin-bottom:4px;font-family:'Share Tech Mono',monospace}
-.car-model{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:#d4f0e8;margin-bottom:14px;letter-spacing:1px;text-shadow:0 0 2px #1a6a58}
-.car-specs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.spec{background:#0e141e;border-radius:4px;padding:6px 8px;border:1px solid #2a5a4c}
-.spec-label{font-size:.55rem;color:#90b8ac;letter-spacing:1px;font-family:'Share Tech Mono',monospace}
-.spec-val{font-size:.8rem;color:#c0e0d4;font-weight:600;margin-top:2px;font-family:'Share Tech Mono',monospace}
+.car-make{
+  font-size:.68rem;letter-spacing:1.5px;color:var(--muted);
+  font-weight:600;text-transform:uppercase;margin-bottom:4px;
+}
+.car-model{
+  font-family:'Poppins',sans-serif;font-size:1.1rem;font-weight:600;
+  color:var(--green-900);margin-bottom:14px;
+}
+.car-specs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.spec{background:var(--green-50);border-radius:10px;padding:8px 10px}
+.spec-label{font-size:.62rem;color:var(--muted);letter-spacing:1px;font-weight:600;text-transform:uppercase}
+.spec-val{font-size:.82rem;color:var(--green-900);font-weight:600;margin-top:3px}
+
 .car-co2{
-  margin-top:14px;padding:8px;border-radius:4px;
-  background:rgba(90,192,170,.08);border:1px solid rgba(90,192,170,.25);
+  margin-top:14px;padding:10px 14px;border-radius:10px;
+  background:var(--green-100);
   display:flex;justify-content:space-between;align-items:center;
 }
-.co2-label{font-size:.55rem;letter-spacing:2px;color:#90b8ac;font-family:'Share Tech Mono',monospace}
-.co2-val{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;color:#7ac8a8}
+.co2-label{font-size:.65rem;letter-spacing:1.2px;color:var(--green-700);font-weight:600}
+.co2-val{font-family:'Poppins',sans-serif;font-size:.9rem;font-weight:700;color:var(--green-800)}
 
-/* ── Connection status badge (offline forced) ── */
 .conn-badge{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:3px 8px;border-radius:3px;font-size:.55rem;
-  font-family:'Share Tech Mono',monospace;letter-spacing:1px;
-  margin-bottom:10px;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:999px;font-size:.65rem;font-weight:600;
+  font-family:'Poppins',sans-serif;margin-bottom:12px;
 }
-.conn-badge .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.conn-offline{
-  background:rgba(224,154,154,.12);
-  color:#e09a9a;
-  border:1px solid rgba(224,154,154,.35);
-}
-.conn-offline .dot{background:#e09a9a;opacity:0.9;box-shadow:0 0 3px #e09a9a}
+.conn-badge .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:currentColor}
+.conn-offline{background:var(--danger-bg);color:var(--danger)}
 
-/* ── Device ID row offline friendly ── */
 .device-id-row{
-  margin-top:10px;padding:7px 10px;border-radius:4px;
-  background:rgba(90,192,170,.08);border:1px solid rgba(90,192,170,.2);
+  margin-top:12px;padding:8px 12px;border-radius:10px;
+  border:1px dashed #b9d4c6;background:#fff;
   display:flex;justify-content:space-between;align-items:center;gap:8px;
 }
-.device-id-label{font-size:.5rem;letter-spacing:2px;color:#90b8ac;font-family:'Share Tech Mono',monospace;white-space:nowrap}
-.device-id-code{font-family:'Share Tech Mono',monospace;font-size:.75rem;color:#7ac8a8;letter-spacing:2px;font-weight:700}
+.device-id-label{font-size:.6rem;letter-spacing:1.2px;color:var(--muted);font-weight:600;white-space:nowrap}
+.device-id-code{font-family:'Poppins',sans-serif;font-size:.8rem;color:var(--green-700);letter-spacing:1px;font-weight:600}
 .copy-btn{
-  background:transparent;border:1px solid rgba(90,192,170,.4);
-  color:#7ac8a8;border-radius:3px;padding:2px 8px;font-size:.55rem;
-  font-family:'Share Tech Mono',monospace;cursor:pointer;transition:all .2s;
-  white-space:nowrap;letter-spacing:1px;
+  background:#fff;border:1px solid var(--green-700);color:var(--green-700);
+  border-radius:8px;padding:4px 10px;font-size:.65rem;font-weight:500;
+  font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap;
 }
-.copy-btn:hover{background:rgba(90,192,170,.2);border-color:#5ac0aa;color:#c8f0e4}
+.copy-btn:hover{background:var(--green-700);color:#fff}
 
 .delete-btn{
-  position:absolute;top:10px;right:10px;
-  width:22px;height:22px;border-radius:3px;
-  background:transparent;border:1px solid #3a5a50;
-  color:#90b8ac;cursor:pointer;font-size:.7rem;
+  position:absolute;top:14px;right:14px;
+  width:26px;height:26px;border-radius:8px;
+  background:#fff;border:1px solid var(--line);color:var(--muted);
+  cursor:pointer;font-size:.75rem;
   display:flex;align-items:center;justify-content:center;
-  transition:all .2s;opacity:0;font-family:'Share Tech Mono',monospace;
+  transition:all .2s;opacity:0;
 }
 .car-card:hover .delete-btn{opacity:1}
-.delete-btn:hover{background:#2a1a1a;border-color:#e09a9a;color:#e0a0a0}
+.delete-btn:hover{background:var(--danger);border-color:var(--danger);color:#fff}
 
 .empty-garage{
-  grid-column:1/-1;text-align:center;padding:60px 20px;
-  border:1px dashed #2a6a5c;border-radius:8px;color:#8ab8b0;
-  font-family:'Share Tech Mono',monospace;
+  grid-column:1/-1;text-align:center;padding:50px 20px;
+  border:2px dashed #b9d4c6;border-radius:16px;color:var(--muted);background:var(--green-50);
 }
-.empty-garage p{font-size:.7rem;letter-spacing:2px;margin-top:8px;color:#90b8ac}
+.empty-garage p{font-size:.85rem;margin-top:6px}
+.empty-garage p:first-child{font-family:'Poppins',sans-serif;font-weight:600;color:var(--green-800);margin-top:0}
 
-/* ── Add car panel (deep theme) ── */
+/* ── Register form ── */
 .search-row{position:relative;margin-bottom:20px}
 .search-input{
-  width:100%;background:#0c121c;border:1px solid #2a6a5c;border-radius:6px;
-  padding:12px 16px 12px 40px;font-family:'Share Tech Mono',monospace;
-  font-size:.8rem;color:#d4f0e8;outline:none;transition:border-color .2s;
+  width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;
+  padding:13px 16px 13px 42px;font-family:'Inter',sans-serif;
+  font-size:.9rem;color:var(--text);outline:none;transition:all .2s;
 }
-.search-input:focus{border-color:#5ac0aa;box-shadow:0 0 6px rgba(90,192,170,0.3)}
-.search-input::placeholder{color:#6a9a8a}
-.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#6a9a8a;font-size:.9rem}
+.search-input:focus{border-color:var(--green-600);box-shadow:0 0 0 4px rgba(47,122,90,.12)}
+.search-input::placeholder{color:#9bb0a5}
+.search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:1rem}
 
-.selects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.selects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:20px}
 .field{display:flex;flex-direction:column;gap:6px}
-.field label{font-size:.6rem;letter-spacing:2px;color:#90b8ac;font-family:'Share Tech Mono',monospace}
+.field label{font-size:.68rem;letter-spacing:1.2px;color:var(--muted);font-weight:600;text-transform:uppercase}
 .field select,.field input{
-  background:#0c121c;border:1px solid #2a6a5c;border-radius:6px;
-  padding:10px 12px;font-family:'Share Tech Mono',monospace;
-  font-size:.8rem;color:#d4f0e8;outline:none;
-  transition:border-color .2s;appearance:none;cursor:pointer;
+  background:#fff;border:1.5px solid var(--line);border-radius:12px;
+  padding:11px 14px;font-family:'Inter',sans-serif;font-size:.9rem;color:var(--text);
+  outline:none;transition:all .2s;cursor:pointer;
 }
-.field select:focus,.field input:focus{border-color:#5ac0aa;box-shadow:0 0 6px rgba(90,192,170,0.2)}
-.field select:disabled{opacity:.4;cursor:not-allowed}
-.field select option{background:#0a0e16;color:#d4f0e8}
+.field select{
+  appearance:none;padding-right:34px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236b7f75' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;
+}
+.field input{cursor:text}
+.field select:focus,.field input:focus{border-color:var(--green-600);box-shadow:0 0 0 4px rgba(47,122,90,.12)}
+.field select:disabled{opacity:.5;cursor:not-allowed;background-color:var(--green-50)}
 
 .results-list{
-  max-height:300px;overflow-y:auto;
-  border:1px solid #2a6a5c;border-radius:6px;
-  margin-bottom:20px;display:none;
-  background:#0c121c;
+  max-height:300px;overflow-y:auto;border:1px solid var(--line);border-radius:12px;
+  margin-bottom:20px;display:none;background:#fff;box-shadow:var(--shadow-sm);
 }
 .results-list.show{display:block}
 .result-item{
-  padding:12px 16px;border-bottom:1px solid #1e2e28;
-  cursor:pointer;transition:background .15s;
-  display:flex;justify-content:space-between;align-items:center;
+  padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer;
+  transition:background .15s;display:flex;justify-content:space-between;align-items:center;
 }
 .result-item:last-child{border-bottom:none}
-.result-item:hover{background:#121e26}
-.result-name{font-size:.8rem;color:#c8f0e4;font-family:'Share Tech Mono',monospace}
-.result-meta{font-size:.65rem;color:#90b8ac;margin-top:2px;font-family:'Share Tech Mono',monospace}
-.result-co2{font-size:.75rem;color:#7ac8a8;font-family:'Orbitron',monospace}
+.result-item:hover{background:var(--green-50)}
+.result-name{font-size:.9rem;color:var(--green-900);font-weight:600}
+.result-meta{font-size:.75rem;color:var(--muted);margin-top:2px}
+.result-co2{font-family:'Poppins',sans-serif;font-size:.8rem;color:var(--green-700);font-weight:600}
 
 .selected-preview{
-  background:#0c121c;border:1px solid #2a6a5c;
-  border-radius:6px;padding:16px;margin-bottom:20px;display:none;
+  background:var(--green-50);border:1px solid var(--line);
+  border-radius:14px;padding:18px;margin-bottom:20px;display:none;
 }
 .selected-preview.show{display:block}
-.preview-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.preview-title{font-family:'Orbitron',monospace;font-size:.9rem;font-weight:700;color:#d4f0e8}
+.preview-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.preview-title{font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:600;color:var(--green-900)}
 .preview-badge{
-  font-size:.6rem;letter-spacing:1px;padding:3px 8px;border-radius:3px;
-  background:rgba(90,192,170,.12);color:#7ac8a8;border:1px solid rgba(90,192,170,.3);
-  font-family:'Share Tech Mono',monospace;
+  font-size:.7rem;font-weight:600;padding:4px 12px;border-radius:999px;
+  background:var(--green-100);color:var(--green-700);
 }
-.preview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.preview-item .pi-label{font-size:.55rem;color:#90b8ac;letter-spacing:1px;font-family:'Share Tech Mono',monospace}
-.preview-item .pi-val{font-size:.85rem;color:#c8f0e4;margin-top:3px;font-weight:600;font-family:'Share Tech Mono',monospace}
+.preview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.preview-item .pi-label{font-size:.62rem;color:var(--muted);letter-spacing:1px;font-weight:600;text-transform:uppercase}
+.preview-item .pi-val{font-size:.9rem;color:var(--green-900);margin-top:3px;font-weight:600}
 
-.bottom-row{display:flex;gap:12px;align-items:flex-end}
+.bottom-row{display:flex;gap:14px;align-items:flex-end}
 .name-field{flex:1}
 .add-btn{
-  background:#1e3a30;color:#c8f0e4;border:1px solid #2a6a5c;
-  border-radius:6px;padding:11px 24px;font-family:'Orbitron',monospace;
-  font-size:.7rem;font-weight:700;letter-spacing:2px;
-  cursor:pointer;transition:all .2s;white-space:nowrap;
-  opacity:.5;pointer-events:none;
+  background:var(--green-800);color:#fff;border:1.5px solid var(--green-800);
+  border-radius:12px;padding:12px 26px;font-family:'Poppins',sans-serif;
+  font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;
+  opacity:.45;pointer-events:none;
 }
-.add-btn.ready{opacity:1;pointer-events:all;background:#2a6a5c;border-color:#5ac0aa}
-.add-btn.ready:hover{background:#3a8a74;transform:translateY(-1px);box-shadow:0 0 12px rgba(90,192,170,0.3)}
+.add-btn.ready{opacity:1;pointer-events:all}
+.add-btn.ready:hover{background:var(--green-900);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
 
-.fuel-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:.55rem;letter-spacing:1px;font-family:'Share Tech Mono',monospace}
-.fuel-X{background:rgba(90,192,170,.12);color:#7ac8a8;border:1px solid rgba(90,192,170,.3)}
-.fuel-Z{background:rgba(90,192,170,.12);color:#7ac8a8;border:1px solid rgba(90,192,170,.3)}
-.fuel-D{background:rgba(224,154,154,.12);color:#e09a9a;border:1px solid rgba(224,154,154,.3)}
-.fuel-E{background:rgba(90,192,170,.12);color:#7ac8a8;border:1px solid rgba(90,192,170,.3)}
-.fuel-N{background:rgba(224,154,154,.12);color:#e09a9a;border:1px solid rgba(224,154,154,.3)}
+/* ── Fuel badges ── */
+.fuel-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.68rem;font-weight:600}
+.fuel-X,.fuel-Z,.fuel-E{background:var(--green-100);color:var(--green-700)}
+.fuel-D,.fuel-N{background:var(--danger-bg);color:var(--danger)}
 
+.footer{text-align:center;padding:18px;color:var(--muted);font-size:.75rem;border-top:1px solid var(--line)}
+
+/* ── Scrollbars ── */
 ::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#1a2428;border-radius:3px}
-::-webkit-scrollbar-thumb{background:#4a8a78;border-radius:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#b9d4c6;border-radius:3px}
 
-/* Leaflet dark overlay fix */
-.leaflet-popup-content-wrapper{background:#0c121c;color:#c8f0e4;border:1px solid #2a6a5c;box-shadow:0 2px 12px rgba(0,0,0,0.5)}
-.leaflet-popup-tip{background:#0c121c}
-.leaflet-popup-content{font-family:'Share Tech Mono',monospace;font-size:.65rem;line-height:1.6;color:#c8f0e4}
+/* ── Leaflet popup ── */
+.leaflet-popup-content-wrapper{background:#fff;color:var(--text);border-radius:12px;box-shadow:var(--shadow)}
+.leaflet-popup-tip{background:#fff}
+.leaflet-popup-content{font-family:'Inter',sans-serif;font-size:.78rem;line-height:1.6;color:var(--text)}
 
+@media(max-width:900px){
+  body{padding:10px}
+  .navbar,.hero,.content{padding-left:18px;padding-right:18px}
+  .hero h1{font-size:1.7rem}
+  .preview-grid{grid-template-columns:repeat(2,1fr)}
+}
 @media(max-width:600px){
   .selects-grid{grid-template-columns:1fr 1fr}
-  .preview-grid{grid-template-columns:repeat(2,1fr)}
-  .bottom-row{flex-direction:column}
+  .bottom-row{flex-direction:column;align-items:stretch}
   .add-btn{width:100%}
-  .header h1{font-size:1.4rem}
   .fleet-summary{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
 <body>
 <div class="container">
+ <div class="shell">
 
-  <div class="header">
-    <h1>FLEET COMMAND</h1>
-    <p>FONCEE MODE — ALL UNITS DISCONNECTED</p>
-  </div>
-
-  <!-- Fleet summary strip: forced offline values -->
-  <div class="fleet-summary" id="fleetSummary">
-    <div class="summary-tile"><div class="st-val" id="sumTotal">0</div><div class="st-label">TOTAL UNITS</div></div>
-    <div class="summary-tile online"><div class="st-val" id="sumOnline">0</div><div class="st-label">CONNECTED</div></div>
-    <div class="summary-tile offline"><div class="st-val" id="sumOffline">0</div><div class="st-label">OFFLINE</div></div>
-    <div class="summary-tile"><div class="st-val" id="sumPct">—</div><div class="st-label">FLEET ONLINE %</div></div>
-  </div>
-
-  <!-- Live fleet map (all markers shown as offline) -->
-  <div class="card">
-    <h3>[ LIVE FLEET MAP ] <span id="mapStatus">OFFLINE MODE</span></h3>
-    <div id="fleetMap"></div>
-    <div class="map-legend">
-      <div class="legend-item"><span class="legend-dot" style="background:#e09a9a;opacity:.8;box-shadow:0 0 3px #e09a9a"></span>OFFLINE — LAST KNOWN POSITION</div>
-      <div class="legend-item"><span class="legend-dot" style="background:#6a9a8a;opacity:.6"></span>OFFLINE — NO GPS DATA</div>
-    </div>
-  </div>
-
-  <!-- Saved cars -->
-  <div class="card">
-    <h3>[ REGISTERED FLEET ] <span id="carCount">0 UNITS</span></h3>
-    <div class="garage-grid" id="garageGrid">
-      <div class="empty-garage">
-        <p>NO VEHICLES CONFIGURED YET</p>
-        <p>ADD A UNIT BELOW TO GET STARTED</p>
+  <nav class="navbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
       </div>
+      FLEET COMMAND
     </div>
-  </div>
+    <span class="nav-tag">Offline mode</span>
+  </nav>
 
-  <!-- Add car -->
-  <div class="card">
-    <h3>[ REGISTER NEW UNIT ] <span></span></h3>
+  <header class="hero">
+    <h1>Manage your <span>fleet</span></h1>
+    <p>Register vehicles, get their device IDs and open each unit's live dashboard. All units are currently shown as disconnected.</p>
+  </header>
 
-    <div class="search-row">
-      <span class="search-icon">⌕</span>
-      <input class="search-input" id="searchInput" type="text"
-        placeholder="SEARCH BY MAKE OR MODEL (e.g. BMW, Corolla...)">
+  <main class="content">
+
+    <!-- Fleet summary -->
+    <div class="fleet-summary" id="fleetSummary">
+      <div class="summary-tile"><div class="st-val" id="sumTotal">0</div><div class="st-label">Total units</div></div>
+      <div class="summary-tile online"><div class="st-val" id="sumOnline">0</div><div class="st-label">Connected</div></div>
+      <div class="summary-tile offline"><div class="st-val" id="sumOffline">0</div><div class="st-label">Offline</div></div>
+      <div class="summary-tile"><div class="st-val" id="sumPct">—</div><div class="st-label">Fleet online %</div></div>
     </div>
 
-    <div class="selects-grid">
-      <div class="field">
-        <label>MAKE</label>
-        <select id="selMake"><option value="">— SELECT MAKE —</option></select>
-      </div>
-      <div class="field">
-        <label>MODEL</label>
-        <select id="selModel" disabled><option value="">— SELECT MODEL —</option></select>
-      </div>
-      <div class="field">
-        <label>ENGINE SIZE (L)</label>
-        <select id="selEngine" disabled><option value="">—</option></select>
-      </div>
-      <div class="field">
-        <label>TRANSMISSION</label>
-        <select id="selTrans" disabled><option value="">—</option></select>
-      </div>
-      <div class="field">
-        <label>FUEL TYPE</label>
-        <select id="selFuel" disabled><option value="">—</option></select>
+    <!-- Fleet map -->
+    <div class="card">
+      <h3>Fleet Map <span id="mapStatus">Offline mode</span></h3>
+      <div id="fleetMap"></div>
+      <div class="map-legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--danger)"></span>Offline · last known position</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#9bb0a5"></span>Offline · no GPS data</div>
       </div>
     </div>
 
-    <div class="results-list" id="resultsList"></div>
-
-    <div class="selected-preview" id="selectedPreview">
-      <div class="preview-header">
-        <div class="preview-title" id="previewTitle">—</div>
-        <div class="preview-badge" id="previewBadge">—</div>
-      </div>
-      <div class="preview-grid">
-        <div class="preview-item"><div class="pi-label">ENGINE</div><div class="pi-val" id="pEngine">—</div></div>
-        <div class="preview-item"><div class="pi-label">CYLINDERS</div><div class="pi-val" id="pCyl">—</div></div>
-        <div class="preview-item"><div class="pi-label">TRANSMISSION</div><div class="pi-val" id="pTrans">—</div></div>
-        <div class="preview-item"><div class="pi-label">FUEL TYPE</div><div class="pi-val" id="pFuel">—</div></div>
-        <div class="preview-item"><div class="pi-label">FUEL COMB</div><div class="pi-val" id="pFuelComb">—</div></div>
-        <div class="preview-item"><div class="pi-label">VEHICLE CLASS</div><div class="pi-val" id="pClass">—</div></div>
-        <div class="preview-item"><div class="pi-label">CO2 (DATASET)</div><div class="pi-val" id="pCO2" style="color:#7ac8a8">—</div></div>
-        <div class="preview-item"><div class="pi-label">MAKE TYPE</div><div class="pi-val" id="pMakeType">—</div></div>
+    <!-- Registered fleet -->
+    <div class="card">
+      <h3>Registered Fleet <span id="carCount">0 UNITS</span></h3>
+      <div class="garage-grid" id="garageGrid">
+        <div class="empty-garage">
+          <p>No vehicles configured yet</p>
+          <p>Add a unit below to get started</p>
+        </div>
       </div>
     </div>
 
-    <div class="bottom-row">
-      <div class="field name-field">
-        <label>UNIT CALLSIGN (OPTIONAL)</label>
-        <input type="text" id="carNickname" placeholder="e.g. UNIT-01 / NORTH DEPOT"
-          oninput="this.value=this.value.toUpperCase()">
-      </div>
-      <button class="add-btn" id="addBtn" onclick="addCar()">+ REGISTER UNIT</button>
-    </div>
-  </div>
+    <!-- Register -->
+    <div class="card">
+      <h3>Register New Unit <span></span></h3>
 
+      <div class="search-row">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="searchInput" type="text"
+          placeholder="Search by make or model (e.g. BMW, Corolla...)">
+      </div>
+
+      <div class="selects-grid">
+        <div class="field">
+          <label>Make</label>
+          <select id="selMake"><option value="">— Select make —</option></select>
+        </div>
+        <div class="field">
+          <label>Model</label>
+          <select id="selModel" disabled><option value="">— Select model —</option></select>
+        </div>
+        <div class="field">
+          <label>Engine size (L)</label>
+          <select id="selEngine" disabled><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Transmission</label>
+          <select id="selTrans" disabled><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Fuel type</label>
+          <select id="selFuel" disabled><option value="">—</option></select>
+        </div>
+      </div>
+
+      <div class="results-list" id="resultsList"></div>
+
+      <div class="selected-preview" id="selectedPreview">
+        <div class="preview-header">
+          <div class="preview-title" id="previewTitle">—</div>
+          <div class="preview-badge" id="previewBadge">—</div>
+        </div>
+        <div class="preview-grid">
+          <div class="preview-item"><div class="pi-label">Engine</div><div class="pi-val" id="pEngine">—</div></div>
+          <div class="preview-item"><div class="pi-label">Cylinders</div><div class="pi-val" id="pCyl">—</div></div>
+          <div class="preview-item"><div class="pi-label">Transmission</div><div class="pi-val" id="pTrans">—</div></div>
+          <div class="preview-item"><div class="pi-label">Fuel type</div><div class="pi-val" id="pFuel">—</div></div>
+          <div class="preview-item"><div class="pi-label">Fuel comb.</div><div class="pi-val" id="pFuelComb">—</div></div>
+          <div class="preview-item"><div class="pi-label">Vehicle class</div><div class="pi-val" id="pClass">—</div></div>
+          <div class="preview-item"><div class="pi-label">CO₂ (dataset)</div><div class="pi-val" id="pCO2" style="color:var(--green-600)">—</div></div>
+          <div class="preview-item"><div class="pi-label">Make type</div><div class="pi-val" id="pMakeType">—</div></div>
+        </div>
+      </div>
+
+      <div class="bottom-row">
+        <div class="field name-field">
+          <label>Unit callsign (optional)</label>
+          <input type="text" id="carNickname" placeholder="e.g. UNIT-01 / NORTH DEPOT"
+            oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <button class="add-btn" id="addBtn" onclick="addCar()">+ Register unit</button>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">Fleet Command · Offline mode · Telemetry System v1.0</footer>
+ </div>
 </div>
 
 <script>
@@ -386,36 +429,32 @@ function initFleetMap() {
   }).addTo(fleetMap);
 }
 
-// OFFLINE only marker icon (deep red-maroon)
 function makeOfflineMarkerIcon() {
   return L.divIcon({
     className: '',
     html: `<div style="
-      width:14px;height:14px;border-radius:50%;
-      background:#e09a9a;opacity:0.85;
-      border:2px solid #c07a7a;
-      box-shadow:0 0 4px #e09a9a;
+      width:16px;height:16px;border-radius:50%;
+      background:#b94a48;
+      border:3px solid #fff;
+      box-shadow:0 2px 6px rgba(20,55,42,.35);
     "></div>`,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7],
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
     popupAnchor: [0, -10]
   });
 }
 
-// Fetch GPS for each car but force offline status presentation.
 async function updateFleetMap() {
   const totalUnits = garage.length;
-  const connected = 0;
-  const offline = totalUnits;
-  
+
   document.getElementById('sumTotal').textContent = totalUnits;
   document.getElementById('sumOnline').textContent = "0";
   document.getElementById('sumOffline').textContent = totalUnits;
   document.getElementById('sumPct').textContent = totalUnits ? "0%" : "—";
-  document.getElementById('mapStatus').textContent = "0 ONLINE · " + totalUnits + " OFFLINE (SIMULATED)";
-  
+  document.getElementById('mapStatus').textContent = "0 online · " + totalUnits + " offline (simulated)";
+
   let positioned = [];
-  
+
   for (const car of garage) {
     const id = car.device_id || 'default';
     try {
@@ -425,14 +464,14 @@ async function updateFleetMap() {
         pts = await r.json();
       } catch(e) { pts = []; }
       const last = pts && pts.length ? pts[pts.length - 1] : null;
-      
+
       const popup = `
-        <b style="color:#c8f0e4">${car.make} ${car.nickname || car.model}</b><br>
+        <b style="color:#14372a">${car.make} ${car.nickname || car.model}</b><br>
         ID: ${id}<br>
-        Status: <span style="color:#e09a9a">OFFLINE (SIMULATED)</span><br>
+        Status: <span style="color:#b94a48;font-weight:600">Offline (simulated)</span><br>
         ${last ? `Lat: ${last.lat.toFixed(5)}<br>Lng: ${last.lng.toFixed(5)}<br>Last known: ${new Date(last.time).toLocaleTimeString()}` : 'No GPS data available'}
       `;
-      
+
       if (last) {
         positioned.push([last.lat, last.lng]);
         if (markers[id]) {
@@ -445,9 +484,7 @@ async function updateFleetMap() {
             .bindPopup(popup);
         }
       } else {
-        if (!markers[id]) {
-          // no GPS, marker not created
-        } else {
+        if (markers[id]) {
           markers[id].setIcon(makeOfflineMarkerIcon());
           markers[id].getPopup().setContent(popup);
         }
@@ -456,20 +493,20 @@ async function updateFleetMap() {
       if (markers[id]) {
         markers[id].setIcon(makeOfflineMarkerIcon());
         markers[id].getPopup().setContent(`
-          <b style="color:#c8f0e4">${car.make} ${car.nickname || car.model}</b><br>
+          <b style="color:#14372a">${car.make} ${car.nickname || car.model}</b><br>
           ID: ${id}<br>
-          Status: <span style="color:#e09a9a">OFFLINE</span><br>
+          Status: <span style="color:#b94a48;font-weight:600">Offline</span><br>
           GPS signal lost / unavailable
         `);
       }
     }
   }
-  
+
   const currentIds = new Set(garage.map(c => c.device_id || 'default'));
   for (const id of Object.keys(markers)) {
     if (!currentIds.has(id)) { fleetMap.removeLayer(markers[id]); delete markers[id]; }
   }
-  
+
   if (positioned.length > 0) {
     fleetMap.fitBounds(positioned.length === 1
       ? L.latLng(positioned[0]).toBounds(5000)
@@ -492,20 +529,20 @@ async function loadDataset() {
 function populateMakes() {
   const makes = [...new Set(allCars.map(c=>c.make))].sort();
   const sel   = document.getElementById('selMake');
-  sel.innerHTML = '<option value="">— SELECT MAKE —</option>';
+  sel.innerHTML = '<option value="">— Select make —</option>';
   makes.forEach(m => {
     const o = document.createElement('option');
     o.value = m; o.textContent = m; sel.appendChild(o);
   });
 }
 
-// ── Cascading selects (unchanged logic) ──
+// ── Cascading selects ──
 document.getElementById('selMake').onchange = function() {
   resetFrom('model');
   if (!this.value) return;
   const models = [...new Set(allCars.filter(c=>c.make===this.value).map(c=>c.model))].sort();
   const sel = document.getElementById('selModel');
-  sel.innerHTML = '<option value="">— SELECT MODEL —</option>';
+  sel.innerHTML = '<option value="">— Select model —</option>';
   models.forEach(m => { const o=document.createElement('option'); o.value=m; o.textContent=m; sel.appendChild(o); });
   sel.disabled = false;
 };
@@ -550,7 +587,7 @@ document.getElementById('selFuel').onchange = function() {
 function resetFrom(level) {
   selectedCar=null; hidePreview();
   const ids=['selModel','selEngine','selTrans','selFuel'];
-  const ph=['— SELECT MODEL —','—','—','—'];
+  const ph=['— Select model —','—','—','—'];
   const start=['model','engine','trans','fuel'].indexOf(level);
   for(let i=start;i<ids.length;i++){
     const s=document.getElementById(ids[i]);
@@ -629,8 +666,8 @@ function makeDeviceId() {
 function copyDeviceId(id, btn) {
   const code = garage.find(c=>c.id===id)?.device_id || '';
   navigator.clipboard.writeText(code).then(()=>{
-    btn.textContent='COPIED!';
-    setTimeout(()=>{ btn.textContent='COPY'; }, 1500);
+    btn.textContent='Copied!';
+    setTimeout(()=>{ btn.textContent='Copy'; }, 1500);
   });
 }
 
@@ -664,33 +701,32 @@ function renderGarage() {
   const grid=document.getElementById('garageGrid');
   document.getElementById('carCount').textContent=garage.length+' UNIT'+(garage.length!==1?'S':'');
   if (!garage.length) {
-    grid.innerHTML='<div class="empty-garage"><p>NO UNITS REGISTERED YET</p><p>ADD A VEHICLE BELOW TO GET STARTED</p></div>';
+    grid.innerHTML='<div class="empty-garage"><p>No units registered yet</p><p>Add a vehicle below to get started</p></div>';
     return;
   }
   grid.innerHTML=garage.map(car=>{
-    const devId  = car.device_id || '';
     return `
-    <div class="car-card offline-card" onclick="openDashboard(${JSON.stringify(car).replace(/"/g,'&quot;')})">
+    <div class="car-card" onclick="openDashboard(${JSON.stringify(car).replace(/"/g,'&quot;')})">
       <button class="delete-btn" onclick="deleteCar(${car.id},event)">✕</button>
       <div class="conn-badge conn-offline">
-        <span class="dot"></span>OFFLINE
+        <span class="dot"></span>Offline
       </div>
       <div class="car-make">${car.make}</div>
       <div class="car-model">${car.nickname||car.model}</div>
       <div class="car-specs">
-        <div class="spec"><div class="spec-label">ENGINE</div><div class="spec-val">${car.engine_size}L · ${car.cylinders}cyl</div></div>
-        <div class="spec"><div class="spec-label">TRANSMISSION</div><div class="spec-val">${car.transmission}</div></div>
-        <div class="spec"><div class="spec-label">FUEL</div><div class="spec-val"><span class="fuel-badge fuel-${car.fuel_type}">${car.fuel_type}</span></div></div>
-        <div class="spec"><div class="spec-label">CLASS</div><div class="spec-val">${car.vehicle_class_type}</div></div>
+        <div class="spec"><div class="spec-label">Engine</div><div class="spec-val">${car.engine_size}L · ${car.cylinders}cyl</div></div>
+        <div class="spec"><div class="spec-label">Transmission</div><div class="spec-val">${car.transmission}</div></div>
+        <div class="spec"><div class="spec-label">Fuel</div><div class="spec-val"><span class="fuel-badge fuel-${car.fuel_type}">${car.fuel_type}</span></div></div>
+        <div class="spec"><div class="spec-label">Class</div><div class="spec-val">${car.vehicle_class_type}</div></div>
       </div>
       <div class="car-co2">
-        <span class="co2-label">DATASET CO2</span>
-        <span class="co2-val">${car.co2} G/KM</span>
+        <span class="co2-label">DATASET CO₂</span>
+        <span class="co2-val">${car.co2} g/km</span>
       </div>
       <div class="device-id-row" onclick="event.stopPropagation()">
         <span class="device-id-label">DEVICE ID</span>
         <span class="device-id-code">${car.device_id||'—'}</span>
-        <button class="copy-btn" onclick="copyDeviceId(${car.id},this)">COPY</button>
+        <button class="copy-btn" onclick="copyDeviceId(${car.id},this)">Copy</button>
       </div>
     </div>`;
   }).join('');
