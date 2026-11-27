@@ -8,7 +8,8 @@ import statsmodels.api as sm
 import math
 
 app = Flask(__name__, static_folder='public', static_url_path='')
-
+from auth import init_auth
+init_auth(app)
 # ── Per-car state stores ──────────────────────────────────────────────────────
 # Keyed by car_id string (e.g. "CAR-A3F9").
 # Each entry is created on first contact from the device.
@@ -226,8 +227,8 @@ def car_id_from_request(req) -> str:
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.route("/")
-def dashboard():
-    return send_from_directory('public', 'index.html')
+def landing():
+    return send_from_directory('public', 'landing.html')
 
 @app.route("/garage")
 def garage_page():
