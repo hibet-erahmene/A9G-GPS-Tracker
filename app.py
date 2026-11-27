@@ -8,8 +8,24 @@ import statsmodels.api as sm
 import math
 
 app = Flask(__name__, static_folder='public', static_url_path='')
-from auth import init_auth
+from auth import init_auth, car_specs
 init_auth(app)
+
+if not os.environ.get("DATABASE_URL"):
+    print("[WARN] DATABASE_URL is missing: using a temporary SQLite file (accounts are lost at restart)")
+if not os.environ.get("SECRET_KEY"):
+    print("[WARN] SECRET_KEY is missing: using an insecure default key")
+
+# ── Settings you can tune ─────────────────────────────────────────────────────
+DIESEL_AFR = float(os.environ.get("DIESEL_AFR", "22.0"))   # ASSUMPTION: calibrate with a tank test
+TRIP_END_S = int(os.environ.get("TRIP_END_S", "180"))       # seconds of stillness that end a trip (use 60 for a demo)
+FC_MIN, FC_MAX = 4.0, 26.0   # range of Fuel_Consumption_Comb in your training data: set from your notebook
+VE = 0.80                    # volumetric efficiency, only used when the car has no MAF sensor
+
+# fuel_type: (air-fuel ratio, density g/L, CO2 g per litre burned)
+FUELS = {"X": (14.7, 740, 2348), "Z": (14.7, 740, 2348), "D": (DIESEL_AFR, 832, 2689)}
+def fuel_params(ft): return FUELS.get(ft, FUELS["X"])
+
 # ── Per-car state stores ──────────────────────────────────────────────────────
 # Keyed by car_id string (e.g. "CAR-A3F9").
 # Each entry is created on first contact from the device.
@@ -91,28 +107,36 @@ def gps_distance_km(points):
 def now_utc():
     return datetime.now(timezone.utc)
 
-def maf_to_fuel_L100(maf_g_per_s, speed_kmh):
-    if not maf_g_per_s or not speed_kmh or float(speed_kmh) == 0:
-        return None
-    maf   = max(float(maf_g_per_s), float(speed_kmh) * 0.12)
-    speed = float(speed_kmh)
-    L_per_s     = (maf / 14.7) / 740
-    m_per_s     = speed / 3.6
-    L_per_100km = (L_per_s / m_per_s) * 100000
-    return round(max(4.0, min(25.0, L_per_100km)), 2)
+def estimate_maf(rpm, map_kpa, iat_c, engine_l):
+    """Speed-density estimate (g/s) for cars whose OBD port gives no MAF reading."""
+    if rpm <= 0 or map_kpa <= 0:
+        return 0.0
+    rho = map_kpa * 1000 / (287.0 * (iat_c + 273.15))            # air density, kg/m3
+    return round(rho * (engine_l / 1000) * (rpm / 120) * VE * 1000, 2)
 
-def maf_to_L_per_s(maf_g_per_s):
+def maf_to_fuel_L100(maf_g_per_s, speed_kmh, fuel_type="X"):
+    if not maf_g_per_s or not speed_kmh or float(speed_kmh) <= 0:
+        return None
+    afr, dens, _ = fuel_params(fuel_type)
+    speed = float(speed_kmh)
+    maf   = max(float(maf_g_per_s), speed * 0.12)
+    L_per_100km = ((maf / afr) / dens) / (speed / 3.6) * 100000
+    return round(max(2.0, min(25.0, L_per_100km)), 2)
+
+def maf_to_L_per_s(maf_g_per_s, fuel_type="X"):
     if not maf_g_per_s or float(maf_g_per_s) <= 0:
         return 0.0
-    return float(maf_g_per_s) / 14.7 / 740
+    afr, dens, _ = fuel_params(fuel_type)
+    return float(maf_g_per_s) / afr / dens
 
 def predict_co2(engine_size, cylinders, fuel_comb,
                 fuel_type='X', transmission='A6',
                 make_type='General', vehicle_class='Sedan'):
+    # vehicle_class here means the dataset's "vehicle_class_type": Sedan / SUV / Truck
     if co2_model is None:
-        return round(float(fuel_comb) * 23.2, 1)
+        return round(float(fuel_comb) * fuel_params(fuel_type)[2] / 100, 1)
     try:
-        fc = float(fuel_comb)
+        fc = min(max(float(fuel_comb), FC_MIN), FC_MAX)   # keep the model inside its training range
         numerical = np.array([[
             engine_size, cylinders,
             round(fc*1.18,1), round(fc*0.85,1),
@@ -137,7 +161,7 @@ def predict_co2(engine_size, cylinders, fuel_comb,
         return round(float(co2_model.predict(final[X_TRAIN_COLS])[0]), 1)
     except Exception as e:
         print(f"[ML] {e}")
-        return round(float(fuel_comb) * 23.2, 1)
+        return round(float(fuel_comb) * fuel_params(fuel_type)[2] / 100, 1)
 
 def finalize_trip(state: dict, car_id: str):
     trip    = state["trip"]
@@ -152,19 +176,20 @@ def finalize_trip(state: dict, car_id: str):
     avg_L100     = round(total_fuel_L / distance_km * 100, 2) if distance_km > 0 else None
     duration_s   = (now_utc() - datetime.fromisoformat(trip["start_time"])).total_seconds()
 
-    car = trip["car"]
+    car = car_specs(car_id) or trip["car"]
+    ft  = car.get("fuel_type", "X")
     co2_g_per_km = predict_co2(
         float(car.get("engine_size", 2.0)), int(car.get("cylinders", 4)),
         avg_L100 or 9.0,
-        car.get("fuel_type", "X"), car.get("transmission", "A6"),
-        car.get("make_type", "General"), car.get("vehicle_class", "Sedan"),
+        ft, car.get("transmission", "A6"),
+        car.get("make_type", "General"), car.get("vehicle_class_type", "Sedan"),
     ) if avg_L100 else None
 
     if co2_g_per_km and distance_km:
         co2_total_g = round(co2_g_per_km * distance_km * 1000, 1)
         method      = "ML model"
     else:
-        co2_total_g = round(total_fuel_L * 2392, 1)
+        co2_total_g = round(total_fuel_L * fuel_params(ft)[2], 1)
         method      = "combustion formula"
 
     summary = {
@@ -203,7 +228,7 @@ def check_trip_end(state: dict, car_id: str):
     if not trip["active"]:
         return
     now   = now_utc()
-    LIMIT = 180
+    LIMIT = TRIP_END_S
 
     obd2_silent = (trip["last_obd2_time"] and
         (now - datetime.fromisoformat(trip["last_obd2_time"])).total_seconds() > LIMIT)
@@ -230,6 +255,10 @@ def car_id_from_request(req) -> str:
 def landing():
     return send_from_directory('public', 'landing.html')
 
+@app.route("/health")
+def health():
+    return "ok", 200          # ping this URL every 10 min to keep Render awake
+
 @app.route("/garage")
 def garage_page():
     return send_from_directory('public', 'garage.html')
@@ -248,7 +277,7 @@ def list_devices():
         if ls and (now - datetime.fromisoformat(ls)).total_seconds() <= TIMEOUT_S:
             active.append(car_id)
     return jsonify(active)
-    
+
 @app.route("/gps", methods=["GET","POST"])
 def gps_handler():
     car_id = car_id_from_request(request)
@@ -301,14 +330,11 @@ def obd2_handler():
         result = dict(state["obd2_data"])
         fuel   = result.get("fuel_consumption")
         if fuel and not result.get("error"):
+            sp = car_specs(car_id)
             result["co2_g_per_km"] = predict_co2(
-                float(request.args.get("engine_size", 2.0)),
-                int(request.args.get("cylinders", 4)),
-                fuel,
-                request.args.get("fuel_type", "X"),
-                request.args.get("transmission", "A6"),
-                request.args.get("make_type", "General"),
-                request.args.get("vehicle_class", "Sedan"),
+                float(sp.get("engine_size", 2.0)), int(sp.get("cylinders", 4)), fuel,
+                sp.get("fuel_type", "X"), sp.get("transmission", "A6"),
+                sp.get("make_type", "General"), sp.get("vehicle_class_type", "Sedan"),
             )
         result["car_id"] = car_id
         return jsonify(result)
@@ -318,9 +344,10 @@ def obd2_handler():
         if not data:
             return jsonify({"error": "invalid data"}), 400
 
-        now_s    = now_utc().isoformat()
-        trip     = state["trip"]
-        obd2     = state["obd2_data"]
+        now_s = now_utc().isoformat()
+        trip  = state["trip"]
+        car   = car_specs(car_id) or trip["car"]
+        ft    = car.get("fuel_type", "X")
 
         interval_s = 0.0
         if trip["last_obd2_time"]:
@@ -330,6 +357,12 @@ def obd2_handler():
             ).total_seconds())
         trip["last_obd2_time"] = now_s
 
+        # No MAF reading (the ESP32 sends -1): estimate it from MAP, RPM and intake temperature
+        maf_in = float(data.get("maf", 0) or 0)
+        if maf_in <= 0:
+            maf_in = estimate_maf(float(data.get("rpm", 0)), float(data.get("map", 0)),
+                                  float(data.get("iat", 20)), float(car.get("engine_size", 2.0)))
+
         state["obd2_data"] = {
             "rpm":      int(float(data.get("rpm",      0))),
             "speed":    int(float(data.get("speed",    0))),
@@ -338,7 +371,7 @@ def obd2_handler():
             "load":     round(float(data.get("load",   0)), 1),
             "throttle": round(float(data.get("throttle", 0)), 1),
             "map":      int(float(data.get("map",      0))),
-            "maf":      round(float(data.get("maf",    0)), 2),
+            "maf":      round(maf_in, 2),
             "fuel":     round(float(data.get("fuel",   0)), 1),
             "batt":     round(float(data.get("batt",   0)), 2),
             "last_update": now_s,
@@ -346,23 +379,18 @@ def obd2_handler():
         }
         obd2 = state["obd2_data"]
 
-        fuel_L100 = maf_to_fuel_L100(obd2["maf"], obd2["speed"])
+        fuel_L100 = maf_to_fuel_L100(obd2["maf"], obd2["speed"], ft)
         obd2["fuel_consumption"] = fuel_L100
 
-        car      = trip["car"]
         co2_live = predict_co2(
-            float(data.get("engine_size",  car.get("engine_size",  2.0))),
-            int(data.get("cylinders",      car.get("cylinders",    4))),
-            fuel_L100 or 9.0,
-            data.get("fuel_type",          car.get("fuel_type",    "X")),
-            data.get("transmission",       car.get("transmission", "A6")),
-            data.get("make_type",          car.get("make_type",    "General")),
-            data.get("vehicle_class",      car.get("vehicle_class","Sedan")),
+            float(car.get("engine_size", 2.0)), int(car.get("cylinders", 4)),
+            fuel_L100 or 9.0, ft, car.get("transmission", "A6"),
+            car.get("make_type", "General"), car.get("vehicle_class_type", "Sedan"),
         ) if fuel_L100 else None
         obd2["co2_g_per_km"] = co2_live
 
         if trip["active"] and interval_s > 0:
-            trip["fuel_samples"].append((maf_to_L_per_s(obd2["maf"]), interval_s))
+            trip["fuel_samples"].append((maf_to_L_per_s(obd2["maf"], ft), interval_s))
 
         print(f"[OBD2] [{car_id}] spd={obd2['speed']} maf={obd2['maf']} co2={co2_live}")
         return jsonify({"ok": True, "car_id": car_id,
@@ -421,4 +449,3 @@ def clear_data():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
