@@ -10,106 +10,44 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{
-  --green-900:#14372a;
-  --green-800:#1b4a38;
-  --green-700:#236048;
-  --green-600:#2f7a5a;
-  --green-500:#3d9a73;
-  --green-100:#e3f1ea;
-  --green-50:#f1f8f4;
-  --cream:#fdf1e3;
-  --bg:#eaf3ee;
-  --card:#ffffff;
-  --text:#14231c;
-  --muted:#6b7f75;
-  --line:#e1ebe5;
-  --danger:#b94a48;
-  --danger-bg:#f8eaea;
-  --shadow:0 10px 30px rgba(20,55,42,.08);
-  --shadow-sm:0 2px 8px rgba(20,55,42,.06);
-  --radius:18px;
+  --green-900:#14372a;--green-800:#1b4a38;--green-700:#236048;--green-600:#2f7a5a;--green-500:#3d9a73;
+  --green-100:#e3f1ea;--green-50:#f1f8f4;--cream:#fdf1e3;--bg:#eaf3ee;--card:#ffffff;--text:#14231c;
+  --muted:#6b7f75;--line:#e1ebe5;--danger:#b94a48;--danger-bg:#f8eaea;
+  --shadow:0 10px 30px rgba(20,55,42,.08);--shadow-sm:0 2px 8px rgba(20,55,42,.06);--radius:18px;
 }
-
 *{margin:0;padding:0;box-sizing:border-box}
-
-body{
-  background:var(--bg);
-  font-family:'Inter',sans-serif;
-  color:var(--text);
-  min-height:100vh;
-  padding:24px;
-}
-
+body{background:var(--bg);font-family:'Inter',sans-serif;color:var(--text);min-height:100vh;padding:24px}
 .container{max-width:1760px;margin:0 auto}
-
 .shell{background:#fff;border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
 
 /* ── Navbar ── */
-.navbar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:18px 36px;border-bottom:1px solid var(--line);background:#fff;
-}
-.brand{
-  display:flex;align-items:center;gap:10px;
-  font-family:'Poppins',sans-serif;font-weight:700;font-size:1rem;
-  letter-spacing:.5px;color:var(--green-800);
-}
-.brand-mark{
-  width:34px;height:34px;border-radius:10px;
-  background:linear-gradient(135deg,var(--green-600),var(--green-800));
-  display:grid;place-items:center;color:#fff;
-}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:18px 36px;border-bottom:1px solid var(--line);background:#fff}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Poppins',sans-serif;font-weight:700;font-size:1rem;letter-spacing:.5px;color:var(--green-800);text-decoration:none}
+.brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--green-600),var(--green-800));display:grid;place-items:center;color:#fff}
 .brand-mark svg{width:18px;height:18px}
-.nav-tag{
-  font-family:'Poppins',sans-serif;font-size:.75rem;font-weight:500;
-  color:var(--green-700);background:var(--green-100);
-  padding:6px 14px;border-radius:999px;
-}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-tag{font-family:'Poppins',sans-serif;font-size:.75rem;font-weight:500;color:var(--green-700);background:var(--green-100);padding:6px 14px;border-radius:999px;text-decoration:none}
+a.nav-tag:hover{background:var(--green-800);color:#fff}
 
 /* ── Hero ── */
-.hero{
-  padding:44px 36px 28px;
-  background:linear-gradient(180deg,var(--cream) 0%,#fff 100%);
-}
-.hero h1{
-  font-family:'Poppins',sans-serif;font-size:2.4rem;font-weight:700;
-  line-height:1.2;color:var(--green-900);
-}
+.hero{padding:44px 36px 28px;background:linear-gradient(180deg,var(--cream) 0%,#fff 100%)}
+.hero h1{font-family:'Poppins',sans-serif;font-size:2.4rem;font-weight:700;line-height:1.2;color:var(--green-900)}
 .hero h1 span{color:var(--green-600)}
 .hero p{margin-top:10px;color:var(--muted);font-size:.95rem;max-width:560px}
-
 .content{padding:8px 36px 36px}
 
 /* ── Summary tiles ── */
-.fleet-summary{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-  gap:14px;margin-bottom:24px;
-}
-.summary-tile{
-  background:var(--green-50);border:1px solid transparent;
-  border-radius:16px;padding:18px 20px;transition:all .2s;
-}
+.fleet-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.summary-tile{background:var(--green-50);border:1px solid transparent;border-radius:16px;padding:18px 20px;transition:all .2s}
 .summary-tile:hover{border-color:var(--green-500);background:#fff;box-shadow:var(--shadow-sm)}
-.summary-tile .st-val{
-  font-family:'Poppins',sans-serif;font-size:1.9rem;font-weight:700;color:var(--green-900);
-}
-.summary-tile .st-label{
-  font-size:.68rem;text-transform:uppercase;letter-spacing:1.2px;
-  color:var(--muted);font-weight:600;margin-top:4px;
-}
+.summary-tile .st-val{font-family:'Poppins',sans-serif;font-size:1.9rem;font-weight:700;color:var(--green-900)}
+.summary-tile .st-label{font-size:.68rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;margin-top:4px}
 .summary-tile.online .st-val{color:var(--green-600)}
 .summary-tile.offline .st-val{color:var(--danger)}
 
 /* ── Cards ── */
-.card{
-  background:var(--card);border-radius:var(--radius);padding:24px;
-  border:1px solid var(--line);box-shadow:var(--shadow-sm);margin-bottom:24px;
-}
-.card h3{
-  display:flex;justify-content:space-between;align-items:center;
-  font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:600;
-  color:var(--green-900);margin-bottom:18px;
-}
+.card{background:var(--card);border-radius:var(--radius);padding:24px;border:1px solid var(--line);box-shadow:var(--shadow-sm);margin-bottom:24px}
+.card h3{display:flex;justify-content:space-between;align-items:center;font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:600;color:var(--green-900);margin-bottom:18px}
 .card h3 span{font-family:'Inter',sans-serif;font-size:.75rem;font-weight:500;color:var(--muted)}
 
 /* ── Map ── */
@@ -119,168 +57,81 @@ body{
 .legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px;flex-shrink:0}
 
 /* ── Garage grid ── */
-.garage-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;
-}
-
-.car-card{
-  background:#fff;border:1px solid var(--line);border-radius:16px;
-  padding:20px;cursor:pointer;position:relative;overflow:hidden;
-  transition:all .25s;box-shadow:var(--shadow-sm);
-}
-.car-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:4px;
-  background:linear-gradient(90deg,var(--danger),#d98c8a);
-}
+.garage-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px}
+.car-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;cursor:pointer;position:relative;overflow:hidden;transition:all .25s;box-shadow:var(--shadow-sm)}
+.car-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--danger),#d98c8a)}
+.car-card.on::before{background:linear-gradient(90deg,var(--green-600),var(--green-500))}
 .car-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--green-500)}
-
-.car-make{
-  font-size:.68rem;letter-spacing:1.5px;color:var(--muted);
-  font-weight:600;text-transform:uppercase;margin-bottom:4px;
-}
-.car-model{
-  font-family:'Poppins',sans-serif;font-size:1.1rem;font-weight:600;
-  color:var(--green-900);margin-bottom:14px;
-}
+.car-make{font-size:.68rem;letter-spacing:1.5px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:4px}
+.car-model{font-family:'Poppins',sans-serif;font-size:1.1rem;font-weight:600;color:var(--green-900);margin-bottom:14px}
 .car-specs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .spec{background:var(--green-50);border-radius:10px;padding:8px 10px}
 .spec-label{font-size:.62rem;color:var(--muted);letter-spacing:1px;font-weight:600;text-transform:uppercase}
 .spec-val{font-size:.82rem;color:var(--green-900);font-weight:600;margin-top:3px}
-
-.car-co2{
-  margin-top:14px;padding:10px 14px;border-radius:10px;
-  background:var(--green-100);
-  display:flex;justify-content:space-between;align-items:center;
-}
+.car-co2{margin-top:14px;padding:10px 14px;border-radius:10px;background:var(--green-100);display:flex;justify-content:space-between;align-items:center}
 .co2-label{font-size:.65rem;letter-spacing:1.2px;color:var(--green-700);font-weight:600}
 .co2-val{font-family:'Poppins',sans-serif;font-size:.9rem;font-weight:700;color:var(--green-800)}
-
-.conn-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:4px 10px;border-radius:999px;font-size:.65rem;font-weight:600;
-  font-family:'Poppins',sans-serif;margin-bottom:12px;
-}
+.conn-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.65rem;font-weight:600;font-family:'Poppins',sans-serif;margin-bottom:12px}
 .conn-badge .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:currentColor}
 .conn-offline{background:var(--danger-bg);color:var(--danger)}
-
-.device-id-row{
-  margin-top:12px;padding:8px 12px;border-radius:10px;
-  border:1px dashed #b9d4c6;background:#fff;
-  display:flex;justify-content:space-between;align-items:center;gap:8px;
-}
+.conn-online{background:var(--green-100);color:var(--green-700)}
+.device-id-row{margin-top:12px;padding:8px 12px;border-radius:10px;border:1px dashed #b9d4c6;background:#fff;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .device-id-label{font-size:.6rem;letter-spacing:1.2px;color:var(--muted);font-weight:600;white-space:nowrap}
-.device-id-code{font-family:'Poppins',sans-serif;font-size:.8rem;color:var(--green-700);letter-spacing:1px;font-weight:600}
-.copy-btn{
-  background:#fff;border:1px solid var(--green-700);color:var(--green-700);
-  border-radius:8px;padding:4px 10px;font-size:.65rem;font-weight:500;
-  font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap;
-}
+.device-id-code{font-family:'Poppins',sans-serif;font-size:.7rem;color:var(--green-700);letter-spacing:.5px;font-weight:600;word-break:break-all}
+.copy-btn{background:#fff;border:1px solid var(--green-700);color:var(--green-700);border-radius:8px;padding:4px 10px;font-size:.65rem;font-weight:500;font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap}
 .copy-btn:hover{background:var(--green-700);color:#fff}
-
-.delete-btn{
-  position:absolute;top:14px;right:14px;
-  width:26px;height:26px;border-radius:8px;
-  background:#fff;border:1px solid var(--line);color:var(--muted);
-  cursor:pointer;font-size:.75rem;
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s;opacity:0;
-}
+.delete-btn{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:8px;background:#fff;border:1px solid var(--line);color:var(--muted);cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;transition:all .2s;opacity:0}
 .car-card:hover .delete-btn{opacity:1}
 .delete-btn:hover{background:var(--danger);border-color:var(--danger);color:#fff}
-
-.empty-garage{
-  grid-column:1/-1;text-align:center;padding:50px 20px;
-  border:2px dashed #b9d4c6;border-radius:16px;color:var(--muted);background:var(--green-50);
-}
+.empty-garage{grid-column:1/-1;text-align:center;padding:50px 20px;border:2px dashed #b9d4c6;border-radius:16px;color:var(--muted);background:var(--green-50)}
 .empty-garage p{font-size:.85rem;margin-top:6px}
 .empty-garage p:first-child{font-family:'Poppins',sans-serif;font-weight:600;color:var(--green-800);margin-top:0}
 
 /* ── Register form ── */
 .search-row{position:relative;margin-bottom:20px}
-.search-input{
-  width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;
-  padding:13px 16px 13px 42px;font-family:'Inter',sans-serif;
-  font-size:.9rem;color:var(--text);outline:none;transition:all .2s;
-}
+.search-input{width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:13px 16px 13px 42px;font-family:'Inter',sans-serif;font-size:.9rem;color:var(--text);outline:none;transition:all .2s}
 .search-input:focus{border-color:var(--green-600);box-shadow:0 0 0 4px rgba(47,122,90,.12)}
 .search-input::placeholder{color:#9bb0a5}
 .search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:1rem}
-
 .selects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:20px}
 .field{display:flex;flex-direction:column;gap:6px}
 .field label{font-size:.68rem;letter-spacing:1.2px;color:var(--muted);font-weight:600;text-transform:uppercase}
-.field select,.field input{
-  background:#fff;border:1.5px solid var(--line);border-radius:12px;
-  padding:11px 14px;font-family:'Inter',sans-serif;font-size:.9rem;color:var(--text);
-  outline:none;transition:all .2s;cursor:pointer;
-}
-.field select{
-  appearance:none;padding-right:34px;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236b7f75' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 14px center;
-}
+.field select,.field input{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;font-family:'Inter',sans-serif;font-size:.9rem;color:var(--text);outline:none;transition:all .2s;cursor:pointer}
+.field select{appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%236b7f75' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
 .field input{cursor:text}
 .field select:focus,.field input:focus{border-color:var(--green-600);box-shadow:0 0 0 4px rgba(47,122,90,.12)}
 .field select:disabled{opacity:.5;cursor:not-allowed;background-color:var(--green-50)}
-
-.results-list{
-  max-height:300px;overflow-y:auto;border:1px solid var(--line);border-radius:12px;
-  margin-bottom:20px;display:none;background:#fff;box-shadow:var(--shadow-sm);
-}
+.results-list{max-height:300px;overflow-y:auto;border:1px solid var(--line);border-radius:12px;margin-bottom:20px;display:none;background:#fff;box-shadow:var(--shadow-sm)}
 .results-list.show{display:block}
-.result-item{
-  padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer;
-  transition:background .15s;display:flex;justify-content:space-between;align-items:center;
-}
+.result-item{padding:12px 16px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .15s;display:flex;justify-content:space-between;align-items:center}
 .result-item:last-child{border-bottom:none}
 .result-item:hover{background:var(--green-50)}
 .result-name{font-size:.9rem;color:var(--green-900);font-weight:600}
 .result-meta{font-size:.75rem;color:var(--muted);margin-top:2px}
 .result-co2{font-family:'Poppins',sans-serif;font-size:.8rem;color:var(--green-700);font-weight:600}
-
-.selected-preview{
-  background:var(--green-50);border:1px solid var(--line);
-  border-radius:14px;padding:18px;margin-bottom:20px;display:none;
-}
+.selected-preview{background:var(--green-50);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:20px;display:none}
 .selected-preview.show{display:block}
 .preview-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
 .preview-title{font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:600;color:var(--green-900)}
-.preview-badge{
-  font-size:.7rem;font-weight:600;padding:4px 12px;border-radius:999px;
-  background:var(--green-100);color:var(--green-700);
-}
+.preview-badge{font-size:.7rem;font-weight:600;padding:4px 12px;border-radius:999px;background:var(--green-100);color:var(--green-700)}
 .preview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .preview-item .pi-label{font-size:.62rem;color:var(--muted);letter-spacing:1px;font-weight:600;text-transform:uppercase}
 .preview-item .pi-val{font-size:.9rem;color:var(--green-900);margin-top:3px;font-weight:600}
-
 .bottom-row{display:flex;gap:14px;align-items:flex-end}
 .name-field{flex:1}
-.add-btn{
-  background:var(--green-800);color:#fff;border:1.5px solid var(--green-800);
-  border-radius:12px;padding:12px 26px;font-family:'Poppins',sans-serif;
-  font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;
-  opacity:.45;pointer-events:none;
-}
+.add-btn{background:var(--green-800);color:#fff;border:1.5px solid var(--green-800);border-radius:12px;padding:12px 26px;font-family:'Poppins',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;opacity:.45;pointer-events:none}
 .add-btn.ready{opacity:1;pointer-events:all}
 .add-btn.ready:hover{background:var(--green-900);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
-
-/* ── Fuel badges ── */
 .fuel-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.68rem;font-weight:600}
 .fuel-X,.fuel-Z,.fuel-E{background:var(--green-100);color:var(--green-700)}
 .fuel-D,.fuel-N{background:var(--danger-bg);color:var(--danger)}
-
 .footer{text-align:center;padding:18px;color:var(--muted);font-size:.75rem;border-top:1px solid var(--line)}
-
-/* ── Scrollbars ── */
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#b9d4c6;border-radius:3px}
-
-/* ── Leaflet popup ── */
 .leaflet-popup-content-wrapper{background:#fff;color:var(--text);border-radius:12px;box-shadow:var(--shadow)}
 .leaflet-popup-tip{background:#fff}
 .leaflet-popup-content{font-family:'Inter',sans-serif;font-size:.78rem;line-height:1.6;color:var(--text)}
-
 @media(max-width:900px){
   body{padding:10px}
   .navbar,.hero,.content{padding-left:18px;padding-right:18px}
@@ -300,18 +151,21 @@ body{
  <div class="shell">
 
   <nav class="navbar">
-    <div class="brand">
+    <a class="brand" href="/">
       <div class="brand-mark">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>
       </div>
       FLEET COMMAND
+    </a>
+    <div class="nav-right">
+      <span class="nav-tag" id="userTag"></span>
+      <a class="nav-tag" href="#" onclick="logout();return false">Log out</a>
     </div>
-    <span class="nav-tag">Offline mode</span>
   </nav>
 
   <header class="hero">
     <h1>Manage your <span>fleet</span></h1>
-    <p>Register vehicles, get their device IDs and open each unit's live dashboard. All units are currently shown as disconnected.</p>
+    <p>Register vehicles, get their device IDs and open each unit's live dashboard. Only you can see your fleet.</p>
   </header>
 
   <main class="content">
@@ -326,11 +180,11 @@ body{
 
     <!-- Fleet map -->
     <div class="card">
-      <h3>Fleet Map <span id="mapStatus">Offline mode</span></h3>
+      <h3>Fleet Map <span id="mapStatus">Loading...</span></h3>
       <div id="fleetMap"></div>
       <div class="map-legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--green-600)"></span>Online</div>
         <div class="legend-item"><span class="legend-dot" style="background:var(--danger)"></span>Offline · last known position</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#9bb0a5"></span>Offline · no GPS data</div>
       </div>
     </div>
 
@@ -409,17 +263,31 @@ body{
 
   </main>
 
-  <footer class="footer">Fleet Command · Offline mode · Telemetry System v1.0</footer>
+  <footer class="footer">Fleet Command · Telemetry System v1.0</footer>
  </div>
 </div>
 
 <script>
 let allCars = [], filteredCars = [], selectedCar = null;
-let garage  = JSON.parse(localStorage.getItem('garage') || '[]');
+let garage = [];                      // loaded from the server (/api/fleet), private to this manager
 
 const FUEL_LABELS = {X:'Regular',Z:'Premium',D:'Diesel',E:'Ethanol',N:'Natural Gas'};
 
-// ── Leaflet fleet map (offline markers only) ───────────────────────────────
+// ── API helper: sends the user back to /login if the session expired ──
+async function api(url, opt = {}) {
+  const r = await fetch(url, { headers: {'Content-Type':'application/json'}, ...opt });
+  if (r.status === 401) { location.href = '/login'; throw new Error('auth'); }
+  return r.json();
+}
+async function logout() { await api('/api/logout', {method:'POST'}); location.href = '/'; }
+
+async function loadFleet() {
+  garage = await api('/api/fleet');
+  renderGarage();
+  updateFleetMap();
+}
+
+// ── Leaflet fleet map ──
 let fleetMap, markers = {};
 
 function initFleetMap() {
@@ -429,89 +297,62 @@ function initFleetMap() {
   }).addTo(fleetMap);
 }
 
-function makeOfflineMarkerIcon() {
+function makeMarkerIcon(online) {
+  const c = online ? '#2f7a5a' : '#b94a48';
   return L.divIcon({
     className: '',
-    html: `<div style="
-      width:16px;height:16px;border-radius:50%;
-      background:#b94a48;
-      border:3px solid #fff;
-      box-shadow:0 2px 6px rgba(20,55,42,.35);
-    "></div>`,
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-    popupAnchor: [0, -10]
+    html: `<div style="width:16px;height:16px;border-radius:50%;background:${c};border:3px solid #fff;box-shadow:0 2px 6px rgba(20,55,42,.35)"></div>`,
+    iconSize: [16, 16], iconAnchor: [8, 8], popupAnchor: [0, -10]
   });
 }
 
 async function updateFleetMap() {
-  const totalUnits = garage.length;
+  const total  = garage.length;
+  const online = garage.filter(c => c.online).length;
+  document.getElementById('sumTotal').textContent   = total;
+  document.getElementById('sumOnline').textContent  = online;
+  document.getElementById('sumOffline').textContent = total - online;
+  document.getElementById('sumPct').textContent     = total ? Math.round(online / total * 100) + '%' : '—';
+  document.getElementById('mapStatus').textContent  = online + ' online · ' + (total - online) + ' offline';
 
-  document.getElementById('sumTotal').textContent = totalUnits;
-  document.getElementById('sumOnline').textContent = "0";
-  document.getElementById('sumOffline').textContent = totalUnits;
-  document.getElementById('sumPct').textContent = totalUnits ? "0%" : "—";
-  document.getElementById('mapStatus').textContent = "0 online · " + totalUnits + " offline (simulated)";
-
-  let positioned = [];
-
+  const positioned = [];
   for (const car of garage) {
-    const id = car.device_id || 'default';
+    const id = car.device_id;
+    let last = null;
     try {
       const r = await fetch('/gps?car_id=' + id);
-      let pts = [];
-      try {
-        pts = await r.json();
-      } catch(e) { pts = []; }
-      const last = pts && pts.length ? pts[pts.length - 1] : null;
+      const pts = r.ok ? await r.json() : [];
+      last = pts && pts.length ? pts[pts.length - 1] : null;
+    } catch (e) { last = null; }
 
-      const popup = `
-        <b style="color:#14372a">${car.make} ${car.nickname || car.model}</b><br>
-        ID: ${id}<br>
-        Status: <span style="color:#b94a48;font-weight:600">Offline (simulated)</span><br>
-        ${last ? `Lat: ${last.lat.toFixed(5)}<br>Lng: ${last.lng.toFixed(5)}<br>Last known: ${new Date(last.time).toLocaleTimeString()}` : 'No GPS data available'}
-      `;
+    const status = car.online
+      ? '<span style="color:#236048;font-weight:600">Online</span>'
+      : '<span style="color:#b94a48;font-weight:600">Offline</span>';
+    const popup = `<b style="color:#14372a">${car.make} ${car.nickname || car.model}</b><br>ID: ${id}<br>Status: ${status}<br>` +
+      (last ? `Lat: ${last.lat.toFixed(5)}<br>Lng: ${last.lng.toFixed(5)}<br>Last known: ${new Date(last.time).toLocaleTimeString()}` : 'No GPS data available');
 
-      if (last) {
-        positioned.push([last.lat, last.lng]);
-        if (markers[id]) {
-          markers[id].setLatLng([last.lat, last.lng]);
-          markers[id].setIcon(makeOfflineMarkerIcon());
-          markers[id].getPopup().setContent(popup);
-        } else {
-          markers[id] = L.marker([last.lat, last.lng], { icon: makeOfflineMarkerIcon() })
-            .addTo(fleetMap)
-            .bindPopup(popup);
-        }
-      } else {
-        if (markers[id]) {
-          markers[id].setIcon(makeOfflineMarkerIcon());
-          markers[id].getPopup().setContent(popup);
-        }
-      }
-    } catch(e) {
+    if (last) {
+      positioned.push([last.lat, last.lng]);
       if (markers[id]) {
-        markers[id].setIcon(makeOfflineMarkerIcon());
-        markers[id].getPopup().setContent(`
-          <b style="color:#14372a">${car.make} ${car.nickname || car.model}</b><br>
-          ID: ${id}<br>
-          Status: <span style="color:#b94a48;font-weight:600">Offline</span><br>
-          GPS signal lost / unavailable
-        `);
+        markers[id].setLatLng([last.lat, last.lng]);
+        markers[id].setIcon(makeMarkerIcon(car.online));
+        markers[id].getPopup().setContent(popup);
+      } else {
+        markers[id] = L.marker([last.lat, last.lng], { icon: makeMarkerIcon(car.online) }).addTo(fleetMap).bindPopup(popup);
       }
     }
   }
 
-  const currentIds = new Set(garage.map(c => c.device_id || 'default'));
+  const currentIds = new Set(garage.map(c => c.device_id));
   for (const id of Object.keys(markers)) {
     if (!currentIds.has(id)) { fleetMap.removeLayer(markers[id]); delete markers[id]; }
   }
 
-  if (positioned.length > 0) {
+  if (positioned.length > 0 && !updateFleetMap.fitted) {
+    updateFleetMap.fitted = true;
     fleetMap.fitBounds(positioned.length === 1
       ? L.latLng(positioned[0]).toBounds(5000)
-      : L.latLngBounds(positioned).pad(0.2)
-    );
+      : L.latLngBounds(positioned).pad(0.2));
   }
 }
 
@@ -521,9 +362,8 @@ async function loadDataset() {
     const r = await fetch('/cars_dataset.json');
     allCars  = await r.json();
     populateMakes();
-    renderGarage();
-    updateFleetMap();
-  } catch(e) { console.error('Could not load cars_dataset.json', e); }
+    await loadFleet();
+  } catch(e) { console.error('Could not load data', e); }
 }
 
 function populateMakes() {
@@ -659,10 +499,6 @@ function hidePreview(){
   document.getElementById('addBtn').classList.remove('ready');
 }
 
-function makeDeviceId() {
-  return 'CAR-' + Math.floor(Math.random()*0x10000).toString(16).toUpperCase().padStart(4,'0');
-}
-
 function copyDeviceId(id, btn) {
   const code = garage.find(c=>c.id===id)?.device_id || '';
   navigator.clipboard.writeText(code).then(()=>{
@@ -671,31 +507,40 @@ function copyDeviceId(id, btn) {
   });
 }
 
-function addCar() {
+// ── Register a unit on the server ──
+async function addCar() {
   if (!selectedCar) return;
-  const nick=document.getElementById('carNickname').value.trim()||'';
-  garage.push({...selectedCar, nickname:nick, id:Date.now(), device_id:makeDeviceId()});
-  saveGarage(); renderGarage(); updateFleetMap();
-  resetFrom('model');
-  document.getElementById('selMake').value='';
-  document.getElementById('searchInput').value='';
-  document.getElementById('carNickname').value='';
-  selectedCar=null; hidePreview();
+  const nick = document.getElementById('carNickname').value.trim();
+  try {
+    const r = await api('/api/fleet', { method:'POST', body: JSON.stringify({...selectedCar, nickname:nick}) });
+    garage.push(r.car);
+    // The secret is shown only once: it goes into the ESP32 sketch as TOKEN
+    prompt('Device secret (shown ONCE). Copy it now and put it in your ESP32 sketch:', r.secret);
+    renderGarage(); updateFleetMap();
+    resetFrom('model');
+    document.getElementById('selMake').value='';
+    document.getElementById('searchInput').value='';
+    document.getElementById('carNickname').value='';
+    selectedCar=null; hidePreview();
+  } catch (e) { if (e.message !== 'auth') alert('Could not register the unit'); }
 }
 
-function deleteCar(id, e) {
+async function deleteCar(id, e) {
   e.stopPropagation();
   if (!confirm('Remove this unit from fleet?')) return;
-  garage=garage.filter(c=>c.id!==id);
-  saveGarage(); renderGarage(); updateFleetMap();
+  const c = garage.find(x=>x.id===id);
+  if (!c) return;
+  try {
+    await api('/api/fleet/' + c.device_id, { method:'DELETE' });
+    garage = garage.filter(x=>x.id!==id);
+    renderGarage(); updateFleetMap();
+  } catch (err) { if (err.message !== 'auth') alert('Could not remove the unit'); }
 }
 
 function openDashboard(car) {
   sessionStorage.setItem('activeCar', JSON.stringify(car));
-  window.location.href='/';
+  window.location.href='/dashboard';
 }
-
-function saveGarage() { localStorage.setItem('garage', JSON.stringify(garage)); }
 
 function renderGarage() {
   const grid=document.getElementById('garageGrid');
@@ -706,10 +551,10 @@ function renderGarage() {
   }
   grid.innerHTML=garage.map(car=>{
     return `
-    <div class="car-card" onclick="openDashboard(${JSON.stringify(car).replace(/"/g,'&quot;')})">
+    <div class="car-card ${car.online?'on':''}" onclick="openDashboard(${JSON.stringify(car).replace(/"/g,'&quot;')})">
       <button class="delete-btn" onclick="deleteCar(${car.id},event)">✕</button>
-      <div class="conn-badge conn-offline">
-        <span class="dot"></span>Offline
+      <div class="conn-badge ${car.online?'conn-online':'conn-offline'}">
+        <span class="dot"></span>${car.online?'Online':'Offline'}
       </div>
       <div class="car-make">${car.make}</div>
       <div class="car-model">${car.nickname||car.model}</div>
@@ -732,9 +577,11 @@ function renderGarage() {
   }).join('');
 }
 
+// ── Init ──
 initFleetMap();
 loadDataset();
-setInterval(() => { updateFleetMap(); }, 15000);
+api('/api/me').then(m => { document.getElementById('userTag').textContent = m.name || ''; }).catch(()=>{});
+setInterval(() => { loadFleet().catch(()=>{}); }, 15000);     // refreshes online status and positions
 </script>
 </body>
 </html>
