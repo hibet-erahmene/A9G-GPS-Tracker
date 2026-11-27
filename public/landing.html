@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fleet Command | Fuel and CO2 telemetry</title>
+<style>
+:root{--g9:#14372a;--g8:#1b4a38;--g6:#2f7a5a;--g1:#e3f1ea;--g0:#f1f8f4;--cream:#fdf1e3;--m:#6b7f75;--l:#e1ebe5}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,Segoe UI,Arial,sans-serif;color:#14231c;background:#fff}
+nav{display:flex;align-items:center;justify-content:space-between;padding:16px 6vw;border-bottom:1px solid var(--l);position:sticky;top:0;background:#fff}
+.brand{font-weight:700;color:var(--g8);letter-spacing:.5px}
+nav div a{margin-left:22px;text-decoration:none;color:var(--g8);font-size:.9rem}
+.btn{display:inline-block;padding:10px 20px;border-radius:10px;border:1.5px solid var(--g8);text-decoration:none;font-weight:600;font-size:.9rem;color:var(--g8)}
+.btn.p{background:var(--g8);color:#fff}
+.hero{padding:80px 6vw 60px;background:linear-gradient(180deg,var(--cream),#fff)}
+h1{font-size:clamp(2rem,5vw,3.2rem);color:var(--g9);line-height:1.15;max-width:760px}
+h1 span{color:var(--g6)}
+.hero p{margin:16px 0 28px;color:var(--m);max-width:560px;font-size:1.05rem}
+.hero .btn{margin-right:10px}
+section{padding:56px 6vw}
+h2{color:var(--g9);margin-bottom:24px;font-size:1.6rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.card{background:var(--g0);border:1px solid var(--l);border-radius:16px;padding:22px}
+.card b{display:block;color:var(--g9);margin-bottom:6px}
+.card p{color:var(--m);font-size:.9rem;line-height:1.5}
+.n{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--g8);color:#fff;font-weight:700;margin-bottom:10px}
+footer{text-align:center;padding:22px;color:var(--m);font-size:.8rem;border-top:1px solid var(--l)}
+</style></head><body>
+<nav><span class="brand">FLEET COMMAND</span>
+<div><a href="#features">Features</a><a href="#how">How it works</a><a id="in" href="/login">Sign in</a><a id="go" class="btn p" href="/login?signup=1">Get started</a></div></nav>
+<header class="hero"><h1>Know your fleet's <span>fuel use and CO&#8322;</span> in real time</h1>
+<p>A GPS and OBD2 tracker plugs into each vehicle. You see position, engine data, fuel consumption and CO&#8322; emissions from one secure dashboard.</p>
+<a class="btn p" href="/login?signup=1">Create your account</a><a class="btn" href="#how">See how it works</a></header>
+<section id="features"><h2>Features</h2><div class="grid">
+<div class="card"><b>Live GPS and engine data</b><p>Position, speed, RPM, coolant, load and battery from the vehicle's OBD2 port.</p></div>
+<div class="card"><b>Fuel and CO&#8322; estimates</b><p>Consumption in L/100 km and CO&#8322; per km, with trip summaries.</p></div>
+<div class="card"><b>Private fleets</b><p>Every manager has an account and sees only their own vehicles.</p></div>
+<div class="card"><b>Real online status</b><p>Each unit shows as online or offline from its last transmission.</p></div></div></section>
+<section id="how" style="background:var(--g0)"><h2>How it works</h2><div class="grid">
+<div class="card"><span class="n">1</span><b>Register a vehicle</b><p>Pick the model, and get a device ID and a secret key.</p></div>
+<div class="card"><span class="n">2</span><b>Plug in the tracker</b><p>The device sends GPS and OBD2 data over the mobile network.</p></div>
+<div class="card"><span class="n">3</span><b>Follow it live</b><p>Open the dashboard to watch the map, fuel use and emissions.</p></div></div></section>
+<footer>Fleet Command &middot; Telemetry System</footer>
+<script>fetch('/api/me').then(r=>r.ok?r.json():null).then(m=>{if(m&&m.name){go.textContent='My fleet';go.href='/garage';in.style.display='none'}}).catch(()=>{})</script>
+</body></html>
