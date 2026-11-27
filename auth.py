@@ -37,9 +37,16 @@ class Device(Base):
     last_seen = Column(DateTime(timezone=True))
 
 
-PUBLIC = ("/", "/login", "/api/signup", "/api/login", "/cars_dataset.json")
+PUBLIC = ("/", "/health", "/login", "/landing.html", "/login.html", "/api/signup", "/api/login", "/cars_dataset.json")
 GUARDED = ("/gps", "/obd2", "/trip/status", "/trip/config", "/clear")
 sha = lambda s: hashlib.sha256(s.encode()).hexdigest()
+
+
+def car_specs(did):
+    """Specs (make, fuel_type, engine_size...) of the vehicle registered for this device id."""
+    with DB() as db:
+        v = db.query(Vehicle).join(Device, Device.vehicle_id == Vehicle.id).filter(Device.device_id == did).first()
+        return json.loads(v.data) if v else {}
 
 
 def init_auth(app):
