@@ -245,6 +245,22 @@
         .trajectory-item:hover { background: rgba(255,255,255,.12); }
         .trajectory-item .t-time { color: #9cc4b2; }
 
+        /* ── Diagnostics ── */
+        .diag-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+        .diag-badge { font-family:'Poppins',sans-serif; font-size:.75rem; font-weight:600; padding:6px 14px; border-radius:999px; }
+        .diag-ok       { background: var(--green-100); color: var(--green-700); }
+        .diag-warning  { background: #fbf1dc; color: var(--warn); }
+        .diag-critical { background: #f8eaea; color: var(--danger); }
+        .diag-grid { display:grid; grid-template-columns: 1fr 1fr; gap:18px; }
+        .diag-sub { font-family:'Poppins',sans-serif; font-size:.8rem; font-weight:600; color:var(--green-900); margin-bottom:8px; }
+        .diag-item { background: var(--green-50); border-radius:12px; padding:10px 14px; margin-bottom:8px; border-left:4px solid var(--green-600); font-size:.8rem; }
+        .diag-item.warning  { border-left-color: var(--warn); }
+        .diag-item.critical { border-left-color: var(--danger); }
+        .diag-item .d-code { font-family:'Poppins',sans-serif; font-weight:700; color: var(--green-900); }
+        .diag-item .d-time { color: var(--muted); font-size:.7rem; margin-top:3px; }
+        .diag-note { font-size:.75rem; color: var(--muted); margin-top:8px; }
+        @media (max-width: 900px) { .diag-grid { grid-template-columns: 1fr; } }
+
         .footer {
             text-align: center; padding: 18px; color: var(--muted);
             font-size: .75rem; border-top: 1px solid var(--line);
@@ -335,6 +351,26 @@
         </div>
 
         <div class="card" style="margin-bottom:24px;">
+            <div class="card-title"><h3>Vehicle Health</h3><span class="card-sub">Fault codes · alerts · anomaly detection</span></div>
+            <div class="diag-head">
+                <span class="diag-badge diag-ok" id="diagLevel">Checking...</span>
+                <span class="card-sub" id="diagMil"></span>
+            </div>
+            <div class="diag-grid">
+                <div>
+                    <div class="diag-sub">Fault codes (DTC)</div>
+                    <div id="diagDtcs"><div class="empty">Waiting for data...</div></div>
+                    <div class="diag-sub" style="margin-top:14px;">Behaviour check</div>
+                    <div id="diagAnomaly" class="diag-note">--</div>
+                </div>
+                <div>
+                    <div class="diag-sub">Alerts (last 24 h)</div>
+                    <div id="diagAlerts"><div class="empty">No alerts</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:24px;">
             <div class="card-title"><h3>Saved Routes</h3><span class="card-sub">Stored in this browser</span></div>
             <div class="saved-routes" id="savedRoutesPanel"><div class="empty">No saved routes</div></div>
         </div>
@@ -363,7 +399,7 @@
     let map, marker = null, path = [], polyline = null;
     let savedRoutes = [], routeCounter = 1;
     let autoRefreshEnabled = true;
-    let gpsInterval, obd2Interval;
+    let gpsInterval, obd2Interval, diagInterval;
 
     function loadSavedRoutes() {
         const stored = localStorage.getItem('savedRoutes_' + CAR_ID);
@@ -538,10 +574,51 @@
         } catch (e) { console.error('OBD2 fetch error:', e); }
     }
 
+    // ── Diagnostics fetch ────────────────────────────────────────────────────
+    const esc = t => String(t == null ? '' : t).replace(/[&<>"']/g,
+        c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    async function fetchDiagnostics() {
+        if (!autoRefreshEnabled) return;
+        try {
+            const r = await fetch('/diagnostics?car_id=' + encodeURIComponent(CAR_ID));
+            if (!r.ok) return;
+            const d = await r.json();
+
+            const lv = document.getElementById('diagLevel');
+            const labels = { ok: 'All clear', warning: 'Attention needed', critical: 'Critical' };
+            lv.textContent = labels[d.level] || d.level;
+            lv.className = 'diag-badge diag-' + d.level;
+
+            document.getElementById('diagMil').textContent =
+                d.mil === true  ? 'Check-engine light is ON' :
+                d.mil === false ? 'Check-engine light is off' : 'Check-engine light: unknown';
+
+            document.getElementById('diagDtcs').innerHTML = d.dtcs.length
+                ? d.dtcs.map(x => `<div class="diag-item warning"><span class="d-code">${esc(x.code)}</span> · ${esc(x.description)}
+                      <div class="d-time">since ${new Date(x.first_seen).toLocaleString()}</div></div>`).join('')
+                : `<div class="empty">${d.dtc_updated ? 'No stored fault codes' : 'Waiting for the first fault-code check (about 30 s)'}</div>`;
+
+            const a = d.anomaly;
+            document.getElementById('diagAnomaly').innerHTML =
+                a.state === 'learning'
+                    ? `Learning this car's normal pattern: ${a.samples} of ${a.needed} samples collected.`
+                : a.state === 'unusual'
+                    ? `<b style="color:var(--warn)">Unusual behaviour detected.</b> Readings differ from this car's normal pattern.`
+                    : `Normal. Compared with this car's own history (learned from ${a.trained_on} samples).`;
+
+            document.getElementById('diagAlerts').innerHTML = d.alerts.length
+                ? d.alerts.map(x => `<div class="diag-item ${esc(x.severity)}">${esc(x.message)}
+                      <div class="d-time">${new Date(x.time).toLocaleString()}</div></div>`).join('')
+                : '<div class="empty">No alerts</div>';
+        } catch (e) { console.error('Diagnostics fetch error:', e); }
+    }
+
     function stopAutoRefresh() {
         autoRefreshEnabled = false;
         clearInterval(gpsInterval);
         clearInterval(obd2Interval);
+        clearInterval(diagInterval);
         document.getElementById('statusBadge').textContent = 'Paused';
         document.getElementById('statusBadge').className   = 'status-badge status-offline';
     }
@@ -551,9 +628,11 @@
         autoRefreshEnabled = true;
         clearInterval(gpsInterval);
         clearInterval(obd2Interval);
+        clearInterval(diagInterval);
         gpsInterval  = setInterval(fetchGPS,  3000);
         obd2Interval = setInterval(fetchOBD2, 2000);
-        fetchGPS(); fetchOBD2();
+        diagInterval = setInterval(fetchDiagnostics, 5000);
+        fetchGPS(); fetchOBD2(); fetchDiagnostics();
     }
 
     function clearAllRoutes() {
@@ -573,8 +652,10 @@
     loadSavedRoutes();
     gpsInterval  = setInterval(fetchGPS,  3000);
     obd2Interval = setInterval(fetchOBD2, 2000);
+    diagInterval = setInterval(fetchDiagnostics, 5000);
     fetchGPS();
     fetchOBD2();
+    fetchDiagnostics();
 </script>
 </body>
 </html>
