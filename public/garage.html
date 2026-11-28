@@ -581,7 +581,7 @@ function renderGarage() {
 initFleetMap();
 loadDataset();
 api('/api/me').then(m => { document.getElementById('userTag').textContent = m.name || ''; }).catch(()=>{});
-setInterval(() => { loadFleet().catch(()=>{}); }, 15000);     // refreshes online status and positions
+setInterval(() => { loadFleet().catch(()=>{}); }, 5000);     // refreshes online status and positions
 </script>
 </body>
 </html>
