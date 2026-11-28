@@ -38,7 +38,7 @@ class Device(Base):
 
 
 PUBLIC = ("/", "/health", "/login", "/landing.html", "/login.html", "/api/signup", "/api/login", "/cars_dataset.json")
-GUARDED = ("/gps", "/obd2", "/trip/status", "/trip/config", "/clear")
+GUARDED = ("/gps", "/obd2", "/trip/status", "/trip/config", "/clear", "/diagnostics")
 sha = lambda s: hashlib.sha256(s.encode()).hexdigest()
 
 
