@@ -9,7 +9,9 @@ import math
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 from auth import init_auth, car_specs
+import diagnostics
 init_auth(app)
+diagnostics.init_diagnostics()
 
 if not os.environ.get("DATABASE_URL"):
     print("[WARN] DATABASE_URL is missing: using a temporary SQLite file (accounts are lost at restart)")
@@ -392,6 +394,20 @@ def obd2_handler():
         if trip["active"] and interval_s > 0:
             trip["fuel_samples"].append((maf_to_L_per_s(obd2["maf"], ft), interval_s))
 
+        # Diagnostics (fault codes, stored telemetry, alerts, anomaly detection).
+        # Wrapped so that a diagnostics problem can never block the live data.
+        try:
+            diagnostics.ingest(car_id, obd2)
+            if "dtc_raw" in data or "mil" in data:          # the ESP32 sends these about every 30 s
+                diagnostics.update_dtc(
+                    car_id, data.get("dtc_raw"),
+                    float(data["mil"]) if data.get("mil") not in (None, "") else None,
+                    float(data["dtc_n"]) if data.get("dtc_n") not in (None, "") else None,
+                    data.get("proto"),
+                )
+        except Exception as e:
+            print(f"[DIAG] [{car_id}] {e}")
+
         print(f"[OBD2] [{car_id}] spd={obd2['speed']} maf={obd2['maf']} co2={co2_live}")
         return jsonify({"ok": True, "car_id": car_id,
                         "co2_g_per_km": co2_live, "fuel_L100": fuel_L100}), 200
@@ -399,6 +415,12 @@ def obd2_handler():
     except Exception as e:
         print(f"[OBD2] [{car_id}] {e}")
         return jsonify({"error": str(e)}), 400
+
+
+@app.route("/diagnostics", methods=["GET"])
+def diagnostics_status():
+    car_id = request.args.get("car_id", "").strip()
+    return jsonify(diagnostics.status(car_id))
 
 
 @app.route("/trip/config", methods=["POST"])
