@@ -12,7 +12,7 @@ from flask_limiter.util import get_remote_address
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-url = os.environ.get("DATABASE_URL", "sqlite:///dev.db").replace("postgres://", "postgresql://", 1)
+url = os.environ.get("DATABASE_URL", "sqlite:///dev.db").replace("postgres://", "postgresql://", 1).replace("postgresql://", "postgresql+psycopg2://", 1)
 engine = create_engine(url, pool_pre_ping=True)
 DB = sessionmaker(bind=engine)
 Base = declarative_base()
@@ -41,7 +41,7 @@ class Device(Base):
 
 
 PUBLIC = ("/", "/health", "/login", "/landing.html", "/login.html", "/api/signup", "/api/login", "/cars_dataset.json")
-GUARDED = ("/gps", "/obd2", "/trip/status", "/trip/config", "/clear")
+GUARDED = ("/gps", "/obd2", "/trip/status", "/trip/config", "/clear", "/diagnostics")
 sha = lambda s: hashlib.sha256(s.encode()).hexdigest()
 
 
